@@ -37,7 +37,7 @@
 
 (def ui-locale (om/factory LocaleSelector))
 
-(def ui-menu-menu (s/sui-factory "Menu" "Menu") )
+(def ui-menu-menu (s/sui-factory "Menu" "Menu"))
 
 (defn ui-fixed-menu []
   (s/ui-menu #js {:fixed "top" :size "large"}
@@ -46,11 +46,11 @@
       (s/ui-menu-item #js {:as "a"} "Work")
       (s/ui-menu-item #js {:as "a"} "Company")
       (s/ui-menu-item #js {:as "a"} "Careers")
-      (ui-menu-menu #js {:position "right"}                    ; should be menu-menu
+      (ui-menu-menu #js {:position "right"}                 ; should be menu-menu
         (s/ui-menu-item #js {:className "item"}
           (s/ui-button #js {:as "a"} "Log in"))
-        (s/ui-menu-item #js {:className "item"}
-          (s/ui-button #js {:as "a"} "Sign Up"))))))
+        (s/ui-menu-item #js {}
+          (s/ui-button #js {:as "a" :primary true} "Sign Up"))))))
 
 (defn show-fixed-menu [this] #(om/update-state! this assoc :visible? true))
 (defn hide-fixed-menu [this] #(om/update-state! this assoc :visible? false))
@@ -58,8 +58,7 @@
 (defn home-page [this]
   (let [visible? (om/get-state this :visible?)]
     (dom/div nil
-      (when visible?
-        (ui-fixed-menu))
+      (when visible? (ui-fixed-menu))
       (s/ui-visibility #js {:onBottomPassed  (show-fixed-menu this)
                             :onBottomVisible (hide-fixed-menu this)
                             :once            false}
@@ -72,18 +71,15 @@
               (s/ui-menu-item #js {:as "a"} "Work")
               (s/ui-menu-item #js {:as "a"} "Company")
               (s/ui-menu-item #js {:as "a"} "Careers")
-              (s/ui-menu-item #js {:as "a"}
+              (s/ui-menu-item #js {:position "right"}
                 (s/ui-button #js {:as "a" :inverted true} "Log in")
                 (s/ui-button #js {:as "a" :inverted true :style #js {:marginLeft "0.5em"}} "Sign Up"))))
 
           (s/ui-container #js {:text true}
-            (s/ui-header #js {:as "h1" :content "Imaging-a-Company" :inverted true :style #js {:fontSize     "4em"
-                                                                                               :fontWeight   "normal"
-                                                                                               :marginBotton 0
-                                                                                               :marginTop    "3em"}})
-            (s/ui-header #js {:as "h2" :content "Do WTF" :inverted true :style #js {:fontSize   "1.7em"
-                                                                                    :fontWeight "normal"}})
-
+            (s/ui-header #js {:as    "h1" :content "Imaging-a-Company" :inverted true
+                              :style #js {:fontSize "4em" :fontWeight "normal" :marginBotton 0 :marginTop "3em"}})
+            (s/ui-header #js {:as    "h2" :content "Do WTF" :inverted true
+                              :style #js {:fontSize "1.7em" :fontWeight "normal"}})
             (s/ui-button #js {:primary true :size "huge"}
               "Get Started"
               (s/ui-icon #js {:name "right arrow"})))))
@@ -97,9 +93,8 @@
               (s/ui-header #js {:as "h3" :style #js {:fontSize "2em"}} "We do other things, too!")
               (dom/p #js {:style #js {:fontSize "1.33em"}} "No one horse wonder here! ljkhads lfkjha sldfkjh alsdkhviovdauh vlakdjhoiuaerg difhv ldkjvh ldakfbjvodfiuhb ldskfbjv laskdvj alksd laskd vladsv"))
             (s/ui-grid-column #js {:width 6 :floated "right"}
-              (s/ui-image #js {:bordered true :rounded true :size "large" }
-                (ui-placeholder {:w 300 :h 300}))
-              ))
+              (s/ui-image #js {:bordered true :rounded true :size "large"}
+                (ui-placeholder {:w 300 :h 300}))))
           (s/ui-grid-row #js {}
             (s/ui-grid-column #js {:textAlign "center"}
               (s/ui-button #js {:size "huge"} "Check Them Out!")))))
@@ -140,15 +135,13 @@
                   (s/ui-list-item #js {:as "a"} "Sitemap")
                   (s/ui-list-item #js {:as "a"} "Contact Us")
                   (s/ui-list-item #js {:as "a"} "Demons")
-                  (s/ui-list-item #js {:as "a"} "Nuns")
-                  ))
+                  (s/ui-list-item #js {:as "a"} "Nuns")))
               (s/ui-grid-column #js {:width 3}
                 (s/ui-header #js {:inverted true :as "h4" :content "Services"})
                 (s/ui-list #js {:link true :inverted true}
                   (s/ui-list-item #js {:as "a"} "Hook-ups")
                   (s/ui-list-item #js {:as "a"} "Nose cleaning")
-                  (s/ui-list-item #js {:as "a"} "Toe nails")
-                  ))
+                  (s/ui-list-item #js {:as "a"} "Toe nails")))
               (s/ui-grid-column #js {:width 7}
                 (s/ui-header #js {:inverted true :as "h4"} "Footer Header")
                 (dom/p nil "Extra space for shit")))))))))
@@ -163,8 +156,7 @@
     (let [{:keys [ui/react-key ui/main ui/locale-selector] :or {react-key "ROOT"}} (om/props this)]
       (dom/div #js {:key react-key}
         ;(ui-locale locale-selector)
-        (home-page this)
-        ))))
+        (home-page this)))))
 
 
 

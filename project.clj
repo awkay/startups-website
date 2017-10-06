@@ -24,11 +24,23 @@
                         :source-paths ["src/main"]
                         :jar          true
                         :compiler     {:asset-path    "js/prod"
-                                       :main          logins.client-main
+                                       ;:main                 logins.client-main
                                        :optimizations :advanced
-                                       :source-map    "resources/public/js/logins.js.map"
                                        :output-dir    "resources/public/js/prod"
-                                       :output-to     "resources/public/js/logins.js"}}]}
+                                       :output-to     "resources/public/js/logins.js"
+                                       :foreign-libs  [{:provides       ["cljsjs.react"]
+                                                        :file           "node_modules/react/dist/react.js"
+                                                        :global-exports {cljsjs.react React}}
+                                                       {:provides       ["cljsjs.react.dom"]
+                                                        :file           "node_modules/react-dom/dist/react-dom.js"
+                                                        :global-exports {cljsjs.react.dom ReactDOM}}]
+                                       :install-deps  false
+                                       :npm-deps      {:react                "15.6.1"
+                                                       :react-dom            "15.6.1"
+                                                       ;:semantic-ui-react    "0.74.2"
+                                                       :react-facebook-login "3.6.2"
+                                                       :react-google-login   "2.11.2"}
+                                       :source-map    "resources/public/js/logins.js.map"}}]}
 
   :profiles {:uberjar    {:main           logins.server-main
                           :aot            :all
