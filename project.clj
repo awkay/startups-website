@@ -7,6 +7,7 @@
                  [org.clojure/clojurescript "1.9.946"]
                  [cljsjs/semantic-ui-react "0.73.0-0"]
                  [com.draines/postal "2.0.2"]
+                 [fulcrologic/semantic-ui-react-wrappers "1.0.0-SNAPSHOT"]
                  [fulcrologic/fulcro "1.0.0" :exclusions [cljsjs/react cljsjs/react-dom]]
                  [fulcrologic/fulcro-spec "1.0.0-beta9" :scope "test" :exclusions [fulcrologic/fulcro]]]
 
@@ -66,8 +67,6 @@
                                                                                  {:provides       ["cljsjs.react.dom"]
                                                                                   :file           "node_modules/react-dom/dist/react-dom.js"
                                                                                   :global-exports {cljsjs.react.dom ReactDOM}}]
-                                                          :verbose              true
-                                                          :compiler-stats       true
                                                           :install-deps         true
                                                           :npm-deps             {:react                "15.6.1"
                                                                                  :react-dom            "15.6.1"

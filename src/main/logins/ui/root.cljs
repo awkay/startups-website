@@ -4,75 +4,20 @@
     [fulcro.client.mutations :as m]
     [fulcro.client.logging :as log]
     [fulcro.client.data-fetch :as df]
-    goog.object
-    cljsjs.semantic-ui-react
+    [logins.ui.components :refer [ui-placeholder]]
     translations.es                                         ; preload translations by requiring their namespace. See Makefile for extraction/generation
     [om.dom :as dom]
     [logins.api.mutations :as api]
+    [fulcrologic.semantic-ui.factories :as s]
+    [fulcrologic.semantic-ui.icons :as i]
     [react-facebook-login :refer [FacebookLogin]]
     [react-google-login :refer [GoogleLogin]]
     [react :refer [createElement]]
     [om.next :as om :refer [defui]]
     [fulcro.i18n :refer [tr trf]]))
 
-(def semantic-ui js/semanticUIReact)
-(def Button (goog.object/get semantic-ui "Button"))
-(def Label (goog.object/get semantic-ui "Label"))
-
-(defn factory-apply
-  [class]
-  (fn [props & children]
-    (apply createElement
-      class
-      props
-      children)))
-
-(def ui-facebook-login (factory-apply (.-default FacebookLogin)))
-(def ui-google-login (factory-apply (.-default GoogleLogin)))
-(def ui-button (factory-apply Button))
-(def ui-label (factory-apply Label))
-
-(defui ^:once Main
-  static fc/InitialAppState
-  (initial-state [c p] {:main/meaning-of-life "unknown" :ui/ping-number 0})
-  static om/Ident
-  (ident [this props] [:ui-components/by-id :main])
-  static om/IQuery
-  (query [this] [:ui/ping-number :main/meaning-of-life])
-  Object
-  (render [this]
-    (let [{:keys [ui/ping-number main/meaning-of-life]} (om/props this)
-          fetch-state (get meaning-of-life :ui/fetch-state nil)
-          meaning     (cond
-                        fetch-state (tr "(Deep Thought Hums)")
-                        (or (string? meaning-of-life) (pos? meaning-of-life)) meaning-of-life
-                        :otherwise "")]
-      (dom/div nil
-        (ui-google-login #js {:clientId   "458328318791-qvm2ofs60qdnmndl5t583uj76smn1mbt.apps.googleusercontent.com"
-                              :buttonText "Login with Google"
-                              :style      nil
-                              :className  "boo"
-                              :onSuccess  (fn [e] (js/console.log "OK" e))
-                              :onFailure  (fn [e] (js/console.log "NOPE" e))
-                              })
-        (ui-facebook-login #js {:appId    "720188794838273"
-                                :autoLoad false
-                                :size     "small"
-                                :textButton "Login"
-                                :onClick  (fn [e] (js/console.log "CLICK"))
-                                :callback (fn [r] (js/console.log :login-result r))})
-        (dom/button #js {:onClick (fn [e]
-                                    (m/set-integer! this :ui/ping-number :value (inc ping-number))
-                                    (om/transact! this `[(api/ping {:x ~ping-number})]))} (tr "Ping the server!"))
-        (dom/span nil
-          (trf "The meaning of life is {meaning}." :meaning meaning))
-
-        (ui-button #js {:onClick (fn [e]
-                                    (df/load this :meaning-of-life nil
-                                      {:target [:ui-components/by-id :main :main/meaning-of-life]}))} (tr "Ask Deep Thought server about the meaning of life."))
-        (ui-label #js {:basic true :color "red" :pointing "left"} "Just do it...")))))
-
-(def ui-main (om/factory Main))
+(def ui-facebook-login (s/factory-apply (.-default FacebookLogin)))
+(def ui-google-login (s/factory-apply (.-default GoogleLogin)))
 
 (defui ^:once LocaleSelector
   static fc/InitialAppState
@@ -92,14 +37,134 @@
 
 (def ui-locale (om/factory LocaleSelector))
 
+(def ui-menu-menu (s/sui-factory "Menu" "Menu") )
+
+(defn ui-fixed-menu []
+  (s/ui-menu #js {:fixed "top" :size "large"}
+    (s/ui-container #js {}
+      (s/ui-menu-item #js {:as "a" :active true} "Home")
+      (s/ui-menu-item #js {:as "a"} "Work")
+      (s/ui-menu-item #js {:as "a"} "Company")
+      (s/ui-menu-item #js {:as "a"} "Careers")
+      (ui-menu-menu #js {:position "right"}                    ; should be menu-menu
+        (s/ui-menu-item #js {:className "item"}
+          (s/ui-button #js {:as "a"} "Log in"))
+        (s/ui-menu-item #js {:className "item"}
+          (s/ui-button #js {:as "a"} "Sign Up"))))))
+
+(defn show-fixed-menu [this] #(om/update-state! this assoc :visible? true))
+(defn hide-fixed-menu [this] #(om/update-state! this assoc :visible? false))
+
+(defn home-page [this]
+  (let [visible? (om/get-state this :visible?)]
+    (dom/div nil
+      (when visible?
+        (ui-fixed-menu))
+      (s/ui-visibility #js {:onBottomPassed  (show-fixed-menu this)
+                            :onBottomVisible (hide-fixed-menu this)
+                            :once            false}
+        (s/ui-segment #js {:inverted  true
+                           :textAlign "center"
+                           :style     #js {:minHeight 700 :padding "1em 0em"}}
+          (s/ui-container nil
+            (s/ui-menu #js {:inverted true :pointing true :secondary true :size "large"}
+              (s/ui-menu-item #js {:as "a" :active true} "Home")
+              (s/ui-menu-item #js {:as "a"} "Work")
+              (s/ui-menu-item #js {:as "a"} "Company")
+              (s/ui-menu-item #js {:as "a"} "Careers")
+              (s/ui-menu-item #js {:as "a"}
+                (s/ui-button #js {:as "a" :inverted true} "Log in")
+                (s/ui-button #js {:as "a" :inverted true :style #js {:marginLeft "0.5em"}} "Sign Up"))))
+
+          (s/ui-container #js {:text true}
+            (s/ui-header #js {:as "h1" :content "Imaging-a-Company" :inverted true :style #js {:fontSize     "4em"
+                                                                                               :fontWeight   "normal"
+                                                                                               :marginBotton 0
+                                                                                               :marginTop    "3em"}})
+            (s/ui-header #js {:as "h2" :content "Do WTF" :inverted true :style #js {:fontSize   "1.7em"
+                                                                                    :fontWeight "normal"}})
+
+            (s/ui-button #js {:primary true :size "huge"}
+              "Get Started"
+              (s/ui-icon #js {:name "right arrow"})))))
+
+      (s/ui-segment #js {:style #js {:padding "8em 0em"} :vertical true}
+        (s/ui-grid #js {:container true :stackable true :verticalAlign "middle"}
+          (s/ui-grid-row #js {}
+            (s/ui-grid-column #js {:width 8}
+              (s/ui-header #js {:as "h3" :style #js {:fontSize "2em"}} "We Help with Stuff")
+              (dom/p #js {:style #js {:fontSize "1.33em"}} "Blah de blah blah blah lkjh alsdfjk lasdjfh laksjdf lkjahdf lajkhdf lkajhdfs lkjahdfs lkjahds lfkjhas ldkjfh alskdjfh lakjsdf lakjdshf lakjsdhf lkjashdf ")
+              (s/ui-header #js {:as "h3" :style #js {:fontSize "2em"}} "We do other things, too!")
+              (dom/p #js {:style #js {:fontSize "1.33em"}} "No one horse wonder here! ljkhads lfkjha sldfkjh alsdkhviovdauh vlakdjhoiuaerg difhv ldkjvh ldakfbjvodfiuhb ldskfbjv laskdvj alksd laskd vladsv"))
+            (s/ui-grid-column #js {:width 6 :floated "right"}
+              (s/ui-image #js {:bordered true :rounded true :size "large" }
+                (ui-placeholder {:w 300 :h 300}))
+              ))
+          (s/ui-grid-row #js {}
+            (s/ui-grid-column #js {:textAlign "center"}
+              (s/ui-button #js {:size "huge"} "Check Them Out!")))))
+
+      (s/ui-segment #js {:style #js {:padding "0em"} :vertical true}
+        (s/ui-grid #js {:celled "internally" :columns "equal" :stackable true}
+          (s/ui-grid-row #js {:textAlign "center"}
+            (s/ui-grid-column #js {:style #js {:paddingBottom "5em" :paddingTop "5em"}}
+              (s/ui-header #js {:as "h3" :style #js {:fontSize "2em"}} "Whaddacompany")
+              (dom/p #js {:style #js {:fontSize "1.33em"}} "That's what they all say!"))
+            (s/ui-grid-column #js {:style #js {:paddingBottom "5em" :paddingTop "5em"}}
+              (s/ui-header #js {:as "h3" :style #js {:fontSize "2em"}} "I suck")
+              (dom/p #js {:style #js {:fontSize "1.33em"}}
+                (s/ui-image #js {:avatar true}
+                  (ui-placeholder {:w 40 :h 40}))
+                "A brilliant guy over there.")))))
+
+      (s/ui-segment #js {:style #js {:padding "8em 0em"} :vertical true}
+        (s/ui-container #js {:text true}
+          (s/ui-header #js {:as "h3" :style #js {:fontSize "2em"}} "Breaking the grid, grabs your attn.")
+          (dom/p #js {:style #js {:fontSize "1.33em"}}
+            "Instead of doing shit we did shit.")
+          (s/ui-button #js {:as "a" :size "large"} "Read More")
+          (s/ui-divider #js {:as    "h4" :className "header" :horizontal true
+                             :style #js {:margin "3em 0em" :textTransform "uppercase"}}
+            (dom/a #js {:href "#"} "Case Studies"))
+          (s/ui-header #js {:as "h2" :style #js {:fontSize "2em"}} "Did we Tell You Shit?")
+          (dom/p #js {:style #js {:fondSize "2em"}} "Yeah yeah yeah...")
+          (s/ui-button #js {:as "a" :size "large"} "Tell me More")))
+
+      (s/ui-segment #js {:inverted true :vertical true :style #js {:padding "5em 0em"}}
+        (s/ui-container nil
+          (s/ui-grid #js {:divided true :inverted true :stackable true}
+            (s/ui-grid-row nil
+              (s/ui-grid-column #js {:width 3}
+                (s/ui-header #js {:inverted true :as "h4" :content "About"})
+                (s/ui-list #js {:link true :inverted true}
+                  (s/ui-list-item #js {:as "a"} "Sitemap")
+                  (s/ui-list-item #js {:as "a"} "Contact Us")
+                  (s/ui-list-item #js {:as "a"} "Demons")
+                  (s/ui-list-item #js {:as "a"} "Nuns")
+                  ))
+              (s/ui-grid-column #js {:width 3}
+                (s/ui-header #js {:inverted true :as "h4" :content "Services"})
+                (s/ui-list #js {:link true :inverted true}
+                  (s/ui-list-item #js {:as "a"} "Hook-ups")
+                  (s/ui-list-item #js {:as "a"} "Nose cleaning")
+                  (s/ui-list-item #js {:as "a"} "Toe nails")
+                  ))
+              (s/ui-grid-column #js {:width 7}
+                (s/ui-header #js {:inverted true :as "h4"} "Footer Header")
+                (dom/p nil "Extra space for shit")))))))))
+
 (defui ^:once Root
   static fc/InitialAppState
-  (initial-state [c p] {:ui/main (fc/get-initial-state Main nil) :ui/locale-selector (fc/get-initial-state LocaleSelector {})})
+  (initial-state [c p] {:ui/locale-selector (fc/get-initial-state LocaleSelector {})})
   static om/IQuery
-  (query [this] [:ui/locale :ui/react-key {:ui/main (om/get-query Main)} {:ui/locale-selector (om/get-query LocaleSelector)}])
+  (query [this] [:ui/locale :ui/react-key {:ui/locale-selector (om/get-query LocaleSelector)}])
   Object
   (render [this]
     (let [{:keys [ui/react-key ui/main ui/locale-selector] :or {react-key "ROOT"}} (om/props this)]
       (dom/div #js {:key react-key}
-        (ui-locale locale-selector)
-        (ui-main main)))))
+        ;(ui-locale locale-selector)
+        (home-page this)
+        ))))
+
+
+
