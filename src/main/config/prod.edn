@@ -1,1 +1,1 @@
-{:port 8080}
+{:port :env.edn/PORT}
