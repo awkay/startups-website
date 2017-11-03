@@ -1,4 +1,4 @@
-(ns logins.client
+(ns startupsite.client
   (:require [om.next :as om]
             [fulcro.client.core :as fc]))
 

@@ -1,4 +1,4 @@
-(ns logins.sample-spec
+(ns startupsite.sample-spec
   (:require
     [fulcro-spec.core :refer [specification provided behavior assertions]]))
 

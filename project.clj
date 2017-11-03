@@ -1,4 +1,4 @@
-(defproject logins "0.1.0-SNAPSHOT"
+(defproject startupsite "0.1.0-SNAPSHOT"
   :description "My Cool Project"
   :license {:name "MIT" :url "https://opensource.org/licenses/MIT"}
   :min-lein-version "2.7.0"
@@ -11,7 +11,7 @@
                  [fulcrologic/fulcro "1.0.0" :exclusions [cljsjs/react cljsjs/react-dom]]
                  [fulcrologic/fulcro-spec "1.0.0-beta9" :scope "test" :exclusions [fulcrologic/fulcro]]]
 
-  :uberjar-name "logins.jar"
+  :uberjar-name "startupsite.jar"
 
   :source-paths ["src/main"]
   :test-paths ["src/test"]
@@ -24,10 +24,10 @@
                         :source-paths ["src/main"]
                         :jar          true
                         :compiler     {:asset-path    "js/prod"
-                                       ;:main                 logins.client-main
+                                       ;:main                 startupsite.client-main
                                        :optimizations :advanced
                                        :output-dir    "resources/public/js/prod"
-                                       :output-to     "resources/public/js/logins.js"
+                                       :output-to     "resources/public/js/startupsite.js"
                                        :foreign-libs  [{:provides       ["cljsjs.react"]
                                                         :file           "node_modules/react/dist/react.js"
                                                         :global-exports {cljsjs.react React}}
@@ -40,9 +40,9 @@
                                                        ;:semantic-ui-react    "0.74.2"
                                                        :react-facebook-login "3.6.2"
                                                        :react-google-login   "2.11.2"}
-                                       :source-map    "resources/public/js/logins.js.map"}}]}
+                                       :source-map    "resources/public/js/startupsite.js.map"}}]}
 
-  :profiles {:uberjar    {:main           logins.server-main
+  :profiles {:uberjar    {:main           startupsite.server-main
                           :aot            :all
                           :jar-exclusions [#"public/js/prod" #"com/google.*js$"]
                           :prep-tasks     ["clean" ["clean"]
@@ -71,7 +71,7 @@
                                                           :main                 cljs.user
                                                           :optimizations        :none
                                                           :output-dir           "resources/public/js/dev"
-                                                          :output-to            "resources/public/js/logins.js"
+                                                          :output-to            "resources/public/js/startupsite.js"
                                                           :preloads             [devtools.preload]
                                                           :foreign-libs         [{:provides       ["cljsjs.react"]
                                                                                   :file           "node_modules/react/dist/react.js"
@@ -89,15 +89,15 @@
                                           {:id           "i18n" ;for gettext string extraction
                                            :source-paths ["src/main"]
                                            :compiler     {:asset-path    "i18n"
-                                                          :main          logins.client-main
+                                                          :main          startupsite.client-main
                                                           :optimizations :whitespace
                                                           :output-dir    "i18n/tmp"
                                                           :output-to     "i18n/i18n.js"}}
                                           {:id           "test"
                                            :source-paths ["src/test" "src/main"]
-                                           :figwheel     {:on-jsload "logins.client-test-main/client-tests"}
+                                           :figwheel     {:on-jsload "startupsite.client-test-main/client-tests"}
                                            :compiler     {:asset-path    "js/test"
-                                                          :main          logins.client-test-main
+                                                          :main          startupsite.client-test-main
                                                           :optimizations :none
                                                           :output-dir    "resources/public/js/test"
                                                           :output-to     "resources/public/js/test/test.js"
@@ -105,7 +105,7 @@
                                           {:id           "automated-tests"
                                            :source-paths ["src/test" "src/main"]
                                            :compiler     {:asset-path    "js/ci"
-                                                          :main          logins.CI-runner
+                                                          :main          startupsite.CI-runner
                                                           :optimizations :none
                                                           :output-dir    "resources/private/js/ci"
                                                           :output-to     "resources/private/js/unit-tests.js"}}
@@ -113,7 +113,7 @@
                                            :figwheel     {:devcards true}
                                            :source-paths ["src/main" "src/cards"]
                                            :compiler     {:asset-path           "js/cards"
-                                                          :main                 logins.cards
+                                                          :main                 startupsite.cards
                                                           :optimizations        :none
                                                           :output-dir           "resources/public/js/cards"
                                                           :output-to            "resources/public/js/cards.js"

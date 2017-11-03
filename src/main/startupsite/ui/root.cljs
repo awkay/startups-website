@@ -1,13 +1,13 @@
-(ns logins.ui.root
+(ns startupsite.ui.root
   (:require
     [fulcro.client.core :as fc]
     [fulcro.client.mutations :as m]
     [fulcro.client.logging :as log]
     [fulcro.client.data-fetch :as df]
-    [logins.ui.components :refer [ui-placeholder]]
+    [startupsite.ui.components :refer [ui-placeholder]]
     translations.es                                         ; preload translations by requiring their namespace. See Makefile for extraction/generation
     [om.dom :as dom]
-    [logins.api.mutations :as api]
+    [startupsite.api.mutations :as api]
     [fulcrologic.semantic-ui.factories :as s]
     [fulcrologic.semantic-ui.icons :as i]
     [react-facebook-login :refer [FacebookLogin]]

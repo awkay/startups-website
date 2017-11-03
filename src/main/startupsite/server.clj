@@ -1,9 +1,9 @@
-(ns logins.server
+(ns startupsite.server
   (:require
     [fulcro.easy-server :refer [make-fulcro-server]]
     ; MUST require these, or you won't get them installed.
-    [logins.api.read]
-    [logins.api.mutations]))
+    [startupsite.api.read]
+    [startupsite.api.mutations]))
 
 (defn build-server
   [{:keys [config] :or {config "config/dev.edn"}}]

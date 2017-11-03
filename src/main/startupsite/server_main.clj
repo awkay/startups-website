@@ -1,9 +1,9 @@
-(ns logins.server-main
+(ns startupsite.server-main
   (:require
     [com.stuartsierra.component :as component]
     [fulcro.server :as c]
     [taoensso.timbre :as timbre]
-    [logins.server :refer [build-server]])
+    [startupsite.server :refer [build-server]])
   (:gen-class))
 
 ; It is recommended that your production config be on the server itself in a directory. We have placed a

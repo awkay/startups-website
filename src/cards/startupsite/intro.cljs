@@ -1,7 +1,7 @@
-(ns logins.intro
+(ns startupsite.intro
   (:require [devcards.core :as rc :refer-macros [defcard]]
             [om.next :as om :refer-macros [defui]]
-            [logins.ui.components :as comp]
+            [startupsite.ui.components :as comp]
             [om.dom :as dom]))
 
 (defcard SVGPlaceholder

@@ -3,8 +3,8 @@
     [fulcro.client.core :as fc]
     [om.next :as om]
 
-    [logins.client :as core]
-    [logins.ui.root :as root]
+    [startupsite.client :as core]
+    [startupsite.ui.root :as root]
 
     [cljs.pprint :refer [pprint]]
     [fulcro.client.logging :as log]))
