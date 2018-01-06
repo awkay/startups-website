@@ -39,18 +39,6 @@
                                        :optimizations :advanced
                                        :output-dir    "resources/public/js/prod"
                                        :output-to     "resources/public/js/startupsite.js"
-                                       :foreign-libs  [{:provides       ["cljsjs.react"]
-                                                        :file           "node_modules/react/dist/react.js"
-                                                        :global-exports {cljsjs.react React}}
-                                                       {:provides       ["cljsjs.react.dom"]
-                                                        :file           "node_modules/react-dom/dist/react-dom.js"
-                                                        :global-exports {cljsjs.react.dom ReactDOM}}]
-                                       :install-deps  false
-                                       :npm-deps      {:react                "15.6.1"
-                                                       :react-dom            "15.6.1"
-                                                       ;:semantic-ui-react    "0.74.2"
-                                                       :react-facebook-login "3.6.2"
-                                                       :react-google-login   "2.11.2"}
                                        :source-map    "resources/public/js/startupsite.js.map"}}]}
 
   :profiles {:uberjar    {:main           startupsite.server-main
@@ -62,6 +50,7 @@
              :dev        {:source-paths ["src/dev" "src/main" "src/test" "src/cards"]
 
                           :jvm-opts     ["-XX:-OmitStackTraceInFastThrow" "-client" "-XX:+TieredCompilation" "-XX:TieredStopAtLevel=1"
+                                         "--add-modules" "java.xml.bind"
                                          "-Xmx1g" "-XX:+UseConcMarkSweepGC" "-XX:+CMSClassUnloadingEnabled" "-Xverify:none"]
 
                           :doo          {:build "automated-tests"
@@ -81,21 +70,10 @@
                                            :compiler     {:asset-path           "js/dev"
                                                           :main                 cljs.user
                                                           :optimizations        :none
+                                                          :parallel-build       true
                                                           :output-dir           "resources/public/js/dev"
                                                           :output-to            "resources/public/js/startupsite.js"
                                                           :preloads             [devtools.preload]
-                                                          :foreign-libs         [{:provides       ["cljsjs.react"]
-                                                                                  :file           "node_modules/react/dist/react.js"
-                                                                                  :global-exports {cljsjs.react React}}
-                                                                                 {:provides       ["cljsjs.react.dom"]
-                                                                                  :file           "node_modules/react-dom/dist/react-dom.js"
-                                                                                  :global-exports {cljsjs.react.dom ReactDOM}}]
-                                                          :install-deps         true
-                                                          :npm-deps             {:react                "15.6.1"
-                                                                                 :react-dom            "15.6.1"
-                                                                                 ;:semantic-ui-react    "0.74.2"
-                                                                                 :react-facebook-login "3.6.2"
-                                                                                 :react-google-login   "2.11.2"}
                                                           :source-map-timestamp true}}
                                           {:id           "i18n" ;for gettext string extraction
                                            :source-paths ["src/main"]
