@@ -86,7 +86,7 @@
                       (dom/p #js {:style #js {:fontSize "1.33em"}} "That's what they all say!"))
                     (s/ui-grid-column #js {:style #js {:paddingBottom "5em" :paddingTop "5em"}}
                       (s/ui-header #js {:as "h3" :style #js {:fontSize "2em"}} "Wow, software I can actually afford?")
-                      (dom/p #js {:style #js {:fontSize "1.33em"}}
+                      (dom/div #js {:style #js {:fontSize "1.33em"}}
                         (s/ui-image #js {:avatar true}
                           (ui-placeholder {:w 40 :h 40}))
                         "A brilliant guy over there.")))))
