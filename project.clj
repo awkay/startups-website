@@ -3,13 +3,24 @@
   :license {:name "MIT" :url "https://opensource.org/licenses/MIT"}
   :min-lein-version "2.7.0"
 
-  :dependencies [[org.clojure/clojure "1.8.0"]
+  :dependencies [[org.clojure/clojure "1.9.0"]
                  [org.clojure/clojurescript "1.9.946"]
+
+                 ; ui
                  [cljsjs/semantic-ui-react "0.73.0-0"]
-                 [com.draines/postal "2.0.2"]
                  [fulcrologic/semantic-ui-react-wrappers "1.0.0-SNAPSHOT"]
-                 [fulcrologic/fulcro "1.0.0" :exclusions [cljsjs/react cljsjs/react-dom]]
-                 [fulcrologic/fulcro-spec "1.0.0-beta9" :scope "test" :exclusions [fulcrologic/fulcro]]]
+                 [fulcrologic/fulcro "2.1.0-beta2"]
+
+                 ; server
+                 [com.draines/postal "2.0.2"]
+
+                 ; pinned
+                 [cljsjs/react "16.2.0-1"]
+                 [cljsjs/react-dom "16.2.0-1"]
+                 [commons-codec "1.11"]
+
+                 ; test
+                 [fulcrologic/fulcro-spec "2.0.0-beta3" :scope "test"]]
 
   :uberjar-name "startupsite.jar"
 
@@ -121,15 +132,13 @@
                                                           :source-map-timestamp true}}]}
 
                           :plugins      [[lein-cljsbuild "1.1.7"]
-                                         [lein-doo "0.1.7"]
-                                         [com.jakemccrary/lein-test-refresh "0.17.0"]]
+                                         [lein-doo "0.1.8"]
+                                         [com.jakemccrary/lein-test-refresh "0.21.1"]]
 
-                          :dependencies [[binaryage/devtools "0.9.4"]
+                          :dependencies [[binaryage/devtools "0.9.8"]
+                                         [fulcrologic/fulcro-inspect "2.0.0-alpha2"]
                                          [org.clojure/tools.namespace "0.3.0-alpha4"]
-                                         [org.clojure/tools.nrepl "0.2.13"]
-                                         [com.cemerick/piggieback "0.2.2"]
                                          [lein-doo "0.1.7" :scope "test"]
-                                         [figwheel-sidecar "0.5.13" :exclusions [org.clojure/tools.reader]]
-                                         [devcards "0.2.3" :exclusions [cljsjs/react cljsjs/react-dom]]]
-                          :repl-options {:init-ns          user
-                                         :nrepl-middleware [cemerick.piggieback/wrap-cljs-repl]}}})
+                                         [figwheel-sidecar "0.5.14"]
+                                         [devcards "0.2.4" :exclusions [cljsjs/react]]]
+                          :repl-options {:init-ns user}}})

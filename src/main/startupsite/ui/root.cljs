@@ -6,36 +6,18 @@
     [fulcro.client.data-fetch :as df]
     [startupsite.ui.components :refer [ui-placeholder]]
     translations.es                                         ; preload translations by requiring their namespace. See Makefile for extraction/generation
-    [om.dom :as dom]
+    [fulcro.client.dom :as dom]
     [startupsite.api.mutations :as api]
     [fulcrologic.semantic-ui.factories :as s]
     [fulcrologic.semantic-ui.icons :as i]
     [react-facebook-login :refer [FacebookLogin]]
     [react-google-login :refer [GoogleLogin]]
     [react :refer [createElement]]
-    [om.next :as om :refer [defui]]
+    [fulcro.client.primitives :as prim :refer [defsc]]
     [fulcro.i18n :refer [tr trf]]))
 
 (def ui-facebook-login (s/factory-apply (.-default FacebookLogin)))
 (def ui-google-login (s/factory-apply (.-default GoogleLogin)))
-
-(defui ^:once LocaleSelector
-  static fc/InitialAppState
-  (initial-state [c p] {:available-locales {"en" "English" "es" "Spanish"}})
-  static om/Ident
-  (ident [this props] [:ui-components/by-id :locale-selector])
-  static om/IQuery
-  ; the weird-looking query here pulls data from the root node (where the current locale is stored) with a "link" query
-  (query [this] [[:ui/locale '_] :available-locales])
-  Object
-  (render [this]
-    (let [{:keys [ui/locale available-locales]} (om/props this)]
-      (dom/div nil "Locale:" (map (fn [[k v]]
-                                    (dom/a #js {:href    "#"
-                                                :style   #js {:paddingRight "5px"}
-                                                :onClick #(om/transact! this `[(m/change-locale {:lang ~k})])} v)) available-locales)))))
-
-(def ui-locale (om/factory LocaleSelector))
 
 (def ui-menu-menu (s/sui-factory "Menu" "Menu"))
 
@@ -46,17 +28,17 @@
       (s/ui-menu-item #js {:as "a"} "Send a Proposal")
       (s/ui-menu-item #js {:as "a"} "Company")
       (s/ui-menu-item #js {:as "a"} "Careers")
-      (comment (ui-menu-menu #js {:position "right"}                ; should be menu-menu
-         (s/ui-menu-item #js {:className "item"}
-           (s/ui-button #js {:as "a"} "Log in"))
-         (s/ui-menu-item #js {}
-           (s/ui-button #js {:as "a" :primary true} "Sign Up")))))))
+      (comment (ui-menu-menu #js {:position "right"}        ; should be menu-menu
+                 (s/ui-menu-item #js {:className "item"}
+                   (s/ui-button #js {:as "a"} "Log in"))
+                 (s/ui-menu-item #js {}
+                   (s/ui-button #js {:as "a" :primary true} "Sign Up")))))))
 
-(defn show-fixed-menu [this] #(om/update-state! this assoc :visible? true))
-(defn hide-fixed-menu [this] #(om/update-state! this assoc :visible? false))
+(defn show-fixed-menu [this] #(prim/update-state! this assoc :visible? true))
+(defn hide-fixed-menu [this] #(prim/update-state! this assoc :visible? false))
 
 (defn home-page [this]
-  (let [visible? (om/get-state this :visible?)]
+  (let [visible? (prim/get-state this :visible?)]
     (dom/div nil
       (when visible? (ui-fixed-menu))
       (s/ui-visibility #js {:onBottomPassed  (show-fixed-menu this)
@@ -72,8 +54,8 @@
               (s/ui-menu-item #js {:as "a"} "Company")
               (s/ui-menu-item #js {:as "a"} "Careers")
               (comment (s/ui-menu-item #js {:position "right"}
-                 (s/ui-button #js {:as "a" :inverted true} "Log in")
-                 (s/ui-button #js {:as "a" :inverted true :style #js {:marginLeft "0.5em"}} "Sign Up")))))
+                         (s/ui-button #js {:as "a" :inverted true} "Log in")
+                         (s/ui-button #js {:as "a" :inverted true :style #js {:marginLeft "0.5em"}} "Sign Up")))))
 
           (s/ui-container #js {:text true}
             (s/ui-header #js {:as    "h1" :content "Fulcrologic" :inverted true
@@ -135,7 +117,7 @@
                 (s/ui-header #js {:inverted true :as "h4" :content "More soon..."})
                 (s/ui-list #js {:link true :inverted true}
                   (s/ui-list-item #js {:as "a"} "A")
-                  (s/ui-list-item #js {:as "a"} "B") ))
+                  (s/ui-list-item #js {:as "a"} "B")))
               (s/ui-grid-column #js {:width 3}
                 (s/ui-header #js {:inverted true :as "h4" :content "Services"})
                 (s/ui-list #js {:link true :inverted true}
@@ -146,17 +128,10 @@
                 (s/ui-header #js {:inverted true :as "h4"} "Footer Header")
                 (dom/p nil "Extra space for stuff coming soon...")))))))))
 
-(defui ^:once Root
-  static fc/InitialAppState
-  (initial-state [c p] {:ui/locale-selector (fc/get-initial-state LocaleSelector {})})
-  static om/IQuery
-  (query [this] [:ui/locale :ui/react-key {:ui/locale-selector (om/get-query LocaleSelector)}])
-  Object
-  (render [this]
-    (let [{:keys [ui/react-key ui/main ui/locale-selector] :or {react-key "ROOT"}} (om/props this)]
-      (dom/div #js {:key react-key}
-        ;(ui-locale locale-selector)
-        (home-page this)))))
+(defsc Root [this props]
+  {:query []}
+  (dom/div nil
+    (home-page this)))
 
 
 

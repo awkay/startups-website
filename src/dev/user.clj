@@ -50,7 +50,7 @@
 
 (defn- init []
   {:pre [(not (started? @system))]}
-  (when-let [new-system (startupsite.server/build-server {:config "config/dev.edn"})]
+  (when-let [new-system (startupsite.server/make-system "config/dev.edn")]
     (reset! system new-system)))
 
 (defn- start []
