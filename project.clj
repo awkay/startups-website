@@ -10,13 +10,15 @@
                  [cljsjs/semantic-ui-react "0.73.0-0"]
                  [fulcrologic/semantic-ui-react-wrappers "1.0.0-SNAPSHOT"]
                  [fulcrologic/fulcro "2.1.0-beta2"]
+                 [cljsjs/react-dom-server "15.6.2-1"]
+
 
                  ; server
                  [com.draines/postal "2.0.2"]
 
                  ; pinned
-                 [cljsjs/react "16.2.0-1"]
-                 [cljsjs/react-dom "16.2.0-1"]
+                 [cljsjs/react "15.6.2-1"]
+                 [cljsjs/react-dom "15.6.2-1"]
                  [commons-codec "1.11"]
 
                  ; test
@@ -34,12 +36,13 @@
   :cljsbuild {:builds [{:id           "production"
                         :source-paths ["src/main"]
                         :jar          true
-                        :compiler     {:asset-path    "js/prod"
-                                       ;:main                 startupsite.client-main
-                                       :optimizations :advanced
-                                       :output-dir    "resources/public/js/prod"
-                                       :output-to     "resources/public/js/startupsite.js"
-                                       :source-map    "resources/public/js/startupsite.js.map"}}]}
+                        :compiler     {:asset-path     "js/prod"
+                                       :parallel-build true
+                                       :optimizations  :advanced
+                                       :externs        ["externs.js"]
+                                       :output-dir     "resources/public/js/prod"
+                                       :output-to      "resources/public/js/startupsite.min.js"
+                                       :source-map     "resources/public/js/startupsite.min.js.map"}}]}
 
   :profiles {:uberjar    {:main           startupsite.server-main
                           :aot            :all

@@ -8,39 +8,81 @@
     [ring.middleware.session.store :as store]
     [ring.util.response :as response]
     [fulcro.util :as util]
+    [startupsite.ui.root :as root]
     [clojure.string :as str]
-    [clojure.java.io :as io]))
+    [clojure.java.io :as io]
+    [fulcro.server-render :as ssr]
+    [fulcro.client.primitives :as prim :refer [db->tree get-query]]
+    [fulcro.client.util :as cutil])
+  (:import (javax.script ScriptEngineManager ScriptException)
+           (jdk.nashorn.api.scripting NashornScriptEngine)))
+
+(declare top-html nashorn-render)
+
 
 (defn top-html
   "Render the HTML for the SPA. There is only ever one kind of HTML to send, but the initial state and initial app view may vary.
   This function takes a normalized client database and a root UI class and generates that page."
   [normalized-client-state root-component-class]
   ; props are a "view" of the db. We use that to generate the view, but the initial state needs to be the entire db
-  (let [;props                (db->tree (get-query root-component-class) normalized-client-state normalized-client-state)
-        ;root-factory         (factory root-component-class)
-        app-html             "SSR!" #_(dom/render-to-str (root-factory props))
-        initial-state-script "" #_(ssr/initial-state->script-tag normalized-client-state)
-        html                 (-> (io/resource "public/index.html")
-                               slurp
-                               (str/replace #"<!-- initial html -->" app-html)
-                               (str/replace #"<!-- initial state -->" initial-state-script))]
+  (let [initial-state-script (ssr/initial-state->script-tag normalized-client-state)
+        props (db->tree (get-query root-component-class) normalized-client-state normalized-client-state)
+        app-html (or (nashorn-render props) "")
+        production-mode? (not (System/getProperty "dev"))
+        script (str "<script src='js/startupsite." (when production-mode? "min.") "js' type='text/javascript'></script>")
+        html (-> (io/resource "public/index.html")
+               slurp
+               (str/replace #"<!-- initial html -->" app-html)
+               (str/replace #"<!-- script -->" script)
+               (str/replace #"<!-- initial state -->" initial-state-script))]
     html))
 
 (defn build-app-state
   "Builds an up-to-date app state based on the URL where the db will contain everything needed. Returns a normalized
   client app db."
   [user uri bidi-match language]
-  #_(let [base-state       (ssr/build-initial-state (root/initial-app-state-tree) root/Root) ; start with a normalized db that includes all union branches. Uses client UI!
-          normalized-state (cond-> base-state
-                             :always (assoc :ui/ready? true))]
-      normalized-state)
-  {})
+  (let [base-state (ssr/build-initial-state (prim/get-initial-state root/Root nil) root/Root) ; start with a normalized db that includes all union branches. Uses client UI!
+        normalized-state (cond-> base-state
+                           :always (assoc :ui/ready? true))]
+    normalized-state))
+
+
+; You probably want more than one of these...concurrent access without private bindings isn't safe
+(defonce nashorn (atom nil))
+
+(defn- read-js [path] (io/reader (io/resource path)))
+
+(defn- start-nashorn
+  "Start a single Nashorn instance capable of running *one* SSR at a time. Not thread safe."
+  ([]
+   (start-nashorn false))
+  ([reinit]
+   (when (or reinit (not @nashorn))
+     (reset! nashorn (-> (ScriptEngineManager.) (.getEngineByName "nashorn")))
+     (.eval @nashorn (read-js "public/nashorn-polyfill.js"))
+     (.eval @nashorn (read-js "public/js/startupsite.min.js")))))
+
+(defn ^String nashorn-render
+  "Render the given tree of props via Nashorn. Returns the HTML as a string."
+  [props]
+  (locking nashorn
+    (try
+     (start-nashorn)
+     (let [string-props (cutil/transit-clj->str props)
+           script-engine ^NashornScriptEngine @nashorn
+           namespc (.eval script-engine "startupsite.nashorn_rendering")
+           result (.invokeMethod script-engine namespc "server_render" (into-array [string-props]))
+           html (String/valueOf result)]
+       html)
+     (catch ScriptException e
+       (timbre/debug "Server-side render failed. This is an expected error when not running from a production build with adv optimizations.")
+       (timbre/error "Rendering exception:" e)))))
 
 (defn render-page
   "Server-side render the entry page."
   [uri match user language]
-  (let [normalized-app-state (build-app-state user uri match language)]
-    (-> (top-html normalized-app-state nil)
+  (let [normalized-app-state {} #_(build-app-state user uri match language)]
+    (-> (top-html normalized-app-state root/Root)
       response/response
       (response/content-type "text/html"))))
 
@@ -49,14 +91,13 @@
   without SSR, just remove this component from the ring stack and supply an index.html in resources/public."
   [handler]
   (fn [req]
-    (let [uri         (:uri req)
-          user        nil
-          bidi-match  nil                                   ; (bidi/match-route routing/app-routes uri) ; where they were trying to go. NOTE: This is shared code with the client!
-          valid-page? (or (= "/" uri) (= "/index.html" uri)) ;(boolean bidi-match)
-          language    (some-> req :headers (get "accept-language") (str/split #",") first keyword)]
-
-      (timbre/info req)
-      (timbre/info "Desired language " language)
+    (let [uid (some-> req :session :uid)                    ; The UID is stored in server session store if they are logged in
+          user nil #_(users/get-user user-db uid)
+          logged-in? (boolean user)
+          uri (:uri req)
+          bidi-match nil #_(bidi/match-route routing/app-routes uri) ; where they were trying to go. NOTE: This is shared code with the client!
+          valid-page? (= "/" uri) #_(boolean bidi-match)
+          language (some-> req :headers (get "accept-language") (str/split #",") first)]
 
       ; . no valid bidi match. BYPASS. We don't handle it.
       (if valid-page?
