@@ -76,7 +76,7 @@
                                                           :parallel-build       true
                                                           :output-dir           "resources/public/js/dev"
                                                           :output-to            "resources/public/js/startupsite.js"
-                                                          :preloads             [devtools.preload]
+                                                          :preloads             [devtools.preload fulcro.inspect.preload]
                                                           :source-map-timestamp true}}
                                           {:id           "i18n" ;for gettext string extraction
                                            :source-paths ["src/main"]
