@@ -53,7 +53,6 @@
              :dev        {:source-paths ["src/dev" "src/main" "src/test" "src/cards"]
 
                           :jvm-opts     ["-XX:-OmitStackTraceInFastThrow" "-client" "-XX:+TieredCompilation" "-XX:TieredStopAtLevel=1"
-                                         "--add-modules" "java.xml.bind"
                                          "-Xmx1g" "-XX:+UseConcMarkSweepGC" "-XX:+CMSClassUnloadingEnabled" "-Xverify:none"]
 
                           :doo          {:build "automated-tests"
