@@ -19,7 +19,6 @@
 
 (declare top-html nashorn-render)
 
-
 (defn top-html
   "Render the HTML for the SPA. There is only ever one kind of HTML to send, but the initial state and initial app view may vary.
   This function takes a normalized client database and a root UI class and generates that page."
@@ -45,7 +44,6 @@
         normalized-state (cond-> base-state
                            :always (assoc :ui/ready? true))]
     normalized-state))
-
 
 ; You probably want more than one of these...concurrent access without private bindings isn't safe
 (defonce nashorn (atom nil))

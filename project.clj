@@ -1,5 +1,5 @@
 (defproject startupsite "0.1.0-SNAPSHOT"
-  :description "My Cool Project"
+  :description "Startup Website"
   :license {:name "MIT" :url "https://opensource.org/licenses/MIT"}
   :min-lein-version "2.7.0"
 
@@ -12,9 +12,10 @@
                  [fulcrologic/fulcro "2.1.0-beta2"]
                  [cljsjs/react-dom-server "15.6.2-1"]
 
-
                  ; server
                  [com.draines/postal "2.0.2"]
+                 [fulcrologic/fulcro-sql "0.3.0"]
+                 [org.postgresql/postgresql "42.1.4"]
 
                  ; pinned
                  [cljsjs/react "15.6.2-1"]
