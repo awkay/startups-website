@@ -38,17 +38,20 @@
 
 (comment
 
+  (let [a (re-find #"^.*compiling:[(]([^:]*):(\d+):(\d+)"
+        "java.lang.RuntimeException: No such namespace: esy, compiling:(startupsite/server.clj:85:7)")]
+    a)
   (Long/parseLong "1")
   )
 
 (defn extract-details [source-dir compile-exception]
   (let [msg (.getMessage compile-exception)
-        [m file line col] (re-seq #"compiling:[(]([^:]*):(\d+):(\d+)" msg)]
-    {:file    (str source-dir "/" file)
-     :message msg
+        [_ file line col] (re-find #"^.*compiling:[(]([^:]*):(\d+):(\d+)" msg)]
+    {:file         (str source-dir "/" file)
+     :message      msg
      :error-inline []
-     :line    (some-> line Long/parseLong)
-     :column  (some-> col Long/parseLong)}))
+     :line         (some-> line Long/parseLong)
+     :column       (some-> col Long/parseLong)}))
 
 ; Run (start-server-tests) in a REPL to start a runner that can render results in a browser
 (suite/def-test-suite start-server-tests
@@ -66,6 +69,11 @@
                                 (let [now (System/currentTimeMillis)]
                                   (when (> (- now @refresh-time) 2000)
                                     (reset! refresh-time now)
+                                    (send-message figwheel ::figserv/broadcast
+                                      {:msg-name         :files-changed
+                                       :files            []
+                                       :figwheel-version "0.5.14"
+                                       :build-id         "server"})
                                     (binding [*ns* (find-ns 'user)
                                               *e nil]
                                       (if (resolve 'stop)
@@ -75,20 +83,13 @@
                                         (do
                                           (timbre/error "Last compile failed. Trying refresh again.")
                                           (tools-ns/refresh :after 'user/start)))
-                                      (if *e
-                                        (do
-                                          (timbre/error "Compile error: " *e)
-                                          (send-message figwheel ::figserv/broadcast
-                                            {:msg-name         :compile-warning,
-                                             :message          (extract-details (first server-source-dirs) *e)
-                                             :figwheel-version "0.5.14"
-                                             :build-id         "server"}))
+                                      (when *e
+                                        (timbre/error "Compile error: " *e)
                                         (send-message figwheel ::figserv/broadcast
-                                          {:msg-name         :files-changed
-                                           :files            []
+                                          {:msg-name         :compile-warning,
+                                           :message          (extract-details (first server-source-dirs) *e)
                                            :figwheel-version "0.5.14"
-                                           :build-id         "server"})
-                                        ))))
+                                           :build-id         "server"})))))
                                 (catch Exception e
                                   (timbre/error "Restart handler threw an exception.")
                                   (.printStackTrace e))))}])))
