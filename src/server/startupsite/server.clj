@@ -22,22 +22,22 @@
   [normalized-client-state root-component-class]
   ; props are a "view" of the db. We use that to generate the view, but the initial state needs to be the entire db
   (let [initial-state-script (ssr/initial-state->script-tag normalized-client-state)
-        props                (db->tree (get-query root-component-class) normalized-client-state normalized-client-state)
-        app-html             (or (nashorn/nashorn-render props) "Loading...")
-        production-mode?     (not (System/getProperty "dev"))
-        script               (str "<script src='js/startupsite." (when production-mode? "min.") "js' type='text/javascript'></script>")
-        html                 (-> (io/resource "public/index.html")
-                               slurp
-                               (str/replace #"<!-- initial html -->" app-html)
-                               (str/replace #"<!-- script -->" script)
-                               (str/replace #"<!-- initial state -->" initial-state-script))]
+        props (db->tree (get-query root-component-class) normalized-client-state normalized-client-state)
+        app-html (or (nashorn/nashorn-render props) "Loading...")
+        production-mode? (not (System/getProperty "dev"))
+        script (str "<script src='js/startupsite." (when production-mode? "min.") "js' type='text/javascript'></script>")
+        html (-> (io/resource "public/index.html")
+               slurp
+               (str/replace #"<!-- initial html -->" app-html)
+               (sr/replace #"<!-- script -->" script)
+               (str/replace #"<!-- initial state -->" initial-state-script))]
     html))
 
 (defn build-app-state
   "Builds an up-to-date app state based on the URL where the db will contain everything needed. Returns a normalized
   client app db."
   [user uri bidi-match language]
-  (let [base-state       (ssr/build-initial-state (prim/get-initial-state root/Root nil) root/Root) ; start with a normalized db that includes all union branches. Uses client UI!
+  (let [base-state (ssr/build-initial-state (prim/get-initial-state root/Root nil) root/Root) ; start with a normalized db that includes all union branches. Uses client UI!
         normalized-state (cond-> base-state
                            :always (assoc :ui/ready? true))]
     normalized-state))
@@ -55,13 +55,13 @@
   without SSR, just remove this component from the ring stack and supply an index.html in resources/public."
   [handler]
   (fn [req]
-    (let [uid         (some-> req :session :uid)            ; The UID is stored in server session store if they are logged in
-          user        nil #_(users/get-user user-db uid)
-          logged-in?  (boolean user)
-          uri         (:uri req)
-          bidi-match  nil #_(bidi/match-route routing/app-routes uri) ; where they were trying to go. NOTE: This is shared code with the client!
+    (let [uid (some-> req :session :uid)                    ; The UID is stored in server session store if they are logged in
+          user nil #_(users/get-user user-db uid)
+          logged-in? (boolean user)
+          uri (:uri req)
+          bidi-match nil #_(bidi/match-route routing/app-routes uri) ; where they were trying to go. NOTE: This is shared code with the client!
           valid-page? (= "/" uri) #_(boolean bidi-match)
-          language    (some-> req :headers (get "accept-language") (str/split #",") first)]
+          language (some-> req :headers (get "accept-language") (str/split #",") first)]
       ; . no valid bidi match. BYPASS. We don't handle it.
       (if valid-page?
         (render-page uri bidi-match user language)
@@ -107,11 +107,11 @@
     :config-path config-path
     :parser (core/fulcro-parser)
     :parser-injections #{:config :session-store}
-    :components {:sessions      (component/using
-                                  (map->RingSessions {})
-                                  [:handler :session-store])
-                 :session-store (map->SessionStore {})
-                 :html5-routes  (component/using
-                                  (map->ServerSideRenderer {})
-                                  ; Technically, the server-side renderer does not use the session by direct code reference, but it needs it to go "first"
-                                  [:handler :session-store])}))
+    :components {:sessions (component/using
+                             (map->RingSessions {})
+                             [:handler :session-store])
+                           :session-store (map->SessionStore {})
+                           :html5-routes (component/using
+                                           (map->ServerSideRenderer {})
+                                           ; Technically, the server-side renderer does not use the session by direct code reference, but it needs it to go "first"
+                                           [:handler :session-store])}))

@@ -68,7 +68,7 @@
 
                           :cljsbuild    {:builds
                                          [{:id           "dev"
-                                           :figwheel     {:on-jsload "cljs.user/mount"}
+                                           :figwheel     {:on-jsload "cljs.user/mount" }
                                            :source-paths ["src/dev" "src/main"]
                                            :compiler     {:asset-path           "js/dev"
                                                           :main                 cljs.user
@@ -118,6 +118,7 @@
 
                           :dependencies [[binaryage/devtools "0.9.8"]
                                          [hawk "0.2.11"]
+                                         [org.clojure/tools.nrepl "0.2.13"]
                                          [fulcrologic/fulcro-inspect "2.0.0-alpha2"]
                                          [org.clojure/tools.namespace "0.3.0-alpha4"]
                                          [lein-doo "0.1.7" :scope "test"]

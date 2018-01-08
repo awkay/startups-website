@@ -53,7 +53,7 @@
                       "At Fulcrologic we're interested in helping companies get the
                       custom software they need at a price they can afford.")
                     (s/ui-header #js {:as "h3" :style #js {:fontSize "2em"}} "Shared Risks, Shared Rewards")
-                    (dom/p #js {:style #js {:fontSize "1.33em"}} "We work with you to produce a
+                    (dm/p #js {:style #js {:fontSize "1.33em"}} "We work with you to produce a
                     tested and well-written product on a time and materials basis. Here's the good part: you only
                     have to pay for part of the time as we go. As you start
                     to generate revenue with that product you make easy payments on the balance to eventually own the
