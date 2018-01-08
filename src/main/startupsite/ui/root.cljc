@@ -24,24 +24,18 @@
   #?(:clj (dom/div nil "")
      :cljs
           (dom/div nil
-            (nav/ui-nav-bar main-nav-bar :fixed-only? true)
-            (s/ui-visibility #js {:onBottomPassed  #(prim/transact! this `[(nav/position-nav-bar {:fixed? true})])
-                                  :onBottomVisible #(prim/transact! this `[(nav/position-nav-bar {:fixed? false})])
-                                  :once            false}
-              (s/ui-segment #js {:inverted  true
-                                 :textAlign "center"
-                                 :style     #js {:minHeight 700 :padding "1em 0em"}}
-                (nav/ui-nav-bar main-nav-bar)
-
-                (s/ui-container #js {:text true}
-                  (s/ui-header #js {:as    "h1" :content "Fulcrologic" :inverted true
-                                    :style #js {:fontSize "4em" :fontWeight "normal" :marginBotton 0 :marginTop "3em"}})
-                  (s/ui-header #js {:as    "h2" :content "The Team That Gets You Started!" :inverted true
-                                    :style #js {:fontSize "1.7em" :fontWeight "normal"}})
-                  (s/ui-button #js {:primary true :size "huge"
-                                    :onClick #(prim/transact! this `[(components/scroll-to {:target :get-started})])}
-                    "Get Started"
-                    (s/ui-icon #js {:name "right arrow"})))))
+            (s/ui-segment #js {:inverted  true
+                               :textAlign "center"
+                               :style     #js {:minHeight 700 :padding "1em 0em"}}
+              (s/ui-container #js {:text true}
+                (s/ui-header #js {:as    "h1" :content "Fulcrologic" :inverted true
+                                  :style #js {:fontSize "4em" :fontWeight "normal" :marginBotton 0 :marginTop "3em"}})
+                (s/ui-header #js {:as    "h2" :content "The Team That Gets You Started!" :inverted true
+                                  :style #js {:fontSize "1.7em" :fontWeight "normal"}})
+                (s/ui-button #js {:primary true :size "huge"
+                                  :onClick #(prim/transact! this `[(components/scroll-to {:target :get-started})])}
+                  "Get Started"
+                  (s/ui-icon #js {:name "right arrow"}))))
 
             (ui-scroll-target get-started-target)
             (s/ui-segment #js {:style #js {:padding "8em 0em"} :vertical true}
@@ -123,14 +117,22 @@
     (r/make-route :submit-proposal [(r/router-instruction :top-router (screen-ident :submit-proposal))])
     ))
 
-(defsc Root [this {:keys [ui/top-router]}]
+(defsc Root [this {:keys [ui/top-router ui/main-nav-bar]}]
   {:initial-state (fn [params]
                     (merge routing-tree
                       {:ui/main-nav-bar (prim/get-initial-state NavBar {})}
                       {:ui/top-router (prim/get-initial-state TopRouter {})}))
    :query         [{:ui/main-nav-bar (prim/get-query NavBar)}
                    {:ui/top-router (prim/get-query TopRouter)}]}
-  (ui-top-router top-router))
+  (dom/div nil
+    #?(:cljs
+       (s/ui-visibility #js {:onBottomPassed  #(prim/transact! this `[(nav/position-nav-bar {:fixed? true})])
+                             :onBottomVisible #(prim/transact! this `[(nav/position-nav-bar {:fixed? false})])
+                             :once            false}
+         (s/ui-segment #js {:inverted true}
+           (nav/ui-nav-bar main-nav-bar :fixed-only? true)
+           (nav/ui-nav-bar main-nav-bar))))
+    (ui-top-router top-router)))
 
 
 

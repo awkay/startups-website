@@ -28,7 +28,7 @@
 
 (defn- stale? [file]
   (let [^File f (io/as-file file)]
-    (and (.exists f) (> (.lastModified f) @last-compile-time))))
+    (and f (.exists f) (> (.lastModified f) @last-compile-time))))
 
 (defn load-and-eval-js []
   (locking last-compile-time
@@ -58,5 +58,6 @@
       html)
     (catch ScriptException e
       (timbre/debug "Server-side render failed. This is an expected error when not running from a production build with adv optimizations.")
-      (timbre/error "Rendering exception:" e))))
+      (timbre/error "Rendering exception:" e)
+      "Loading... (SSR disabled. Did you forget to build the production js?)")))
 

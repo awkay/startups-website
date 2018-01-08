@@ -29,21 +29,16 @@
 
 (defn current-screen
   "Returns the current screen name for the top-level router"
-  [router-table router-id]
-  (some-> router-table
-    (get router-id)
-    ::r/current-route
-    first
-    name
-    keyword))
+  [props router-id]
+  (some-> (r/current-route props router-id) first name keyword))
 
-(defsc NavBar [this {:keys [ui/fixed? r/routers-table] :as props}]
+(defsc NavBar [this {:keys [ui/fixed?] :as props}]
   {:query         (fn [] [:ui/fixed? [r/routers-table '_]])
    :ident         (fn [] nav-bar-ident)
    :initial-state (fn [p] {:ui/fixed? false})}
-  (let [options (clj->js (if fixed? {:fixed "top" :size "large"}
-                                    {:inverted true :pointing true :secondary true :size "large"}))
-        active-screen :home #_(current-screen routers-table :top-router )]
+  (let [options       (clj->js (if fixed? {:fixed "top" :size "large"}
+                                          {:inverted true :pointing true :secondary true :size "large"}))
+        active-screen (current-screen props :top-router)]
     #?(:cljs
        (s/ui-container nil
          (s/ui-menu options
@@ -65,7 +60,7 @@
 (let [factory (prim/factory NavBar)]
   (defn ui-nav-bar [props & {:keys [fixed-only?] :or {fixed-only? false}}]
     (let [is-fixed? (:ui/fixed? props false)
-          render? (or (not fixed-only?) (= is-fixed? :fixed-only?))]
+          render?   (or (not fixed-only?) (= is-fixed? :fixed-only?))]
       (when render?
         (factory props)))))
 
