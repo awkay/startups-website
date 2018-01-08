@@ -27,18 +27,17 @@
 (defonce last-compile-time (atom 0))
 
 (defn- stale? [file]
-  (let [^File f       (io/as-file file)
-        last-modified (.lastModified f)]
-    (> last-modified @last-compile-time)))
+  (let [^File f (io/as-file file)]
+    (and (.exists f) (> (.lastModified f) @last-compile-time))))
 
 (defn load-and-eval-js []
   (locking last-compile-time
     (when (stale? (io/resource production-js))
-      (let [start         (System/currentTimeMillis)
+      (let [start (System/currentTimeMillis)
             script-engine ^NashornScriptEngine @nashorn
-            _             (.eval script-engine (read-js "public/nashorn-polyfill.js"))
-            _             (.eval script-engine (read-js production-js))
-            end           (System/currentTimeMillis)]
+            _ (.eval script-engine (read-js "public/nashorn-polyfill.js"))
+            _ (.eval script-engine (read-js production-js))
+            end (System/currentTimeMillis)]
         (reset! last-compile-time end)
         (timbre/info "JS Eval took (ms): " (- end start))))))
 
@@ -48,13 +47,13 @@
   (try
     (locking nashorn (start-nashorn))
     (load-and-eval-js)
-    (let [start         (System/currentTimeMillis)
-          string-props  (cutil/transit-clj->str props)
+    (let [start (System/currentTimeMillis)
+          string-props (cutil/transit-clj->str props)
           script-engine ^NashornScriptEngine @nashorn
-          namespc       (.eval script-engine "startupsite.nashorn_rendering")
-          result        (.invokeMethod script-engine namespc "server_render" (into-array [string-props]))
-          html          (String/valueOf result)
-          end           (System/currentTimeMillis)]
+          namespc (.eval script-engine "startupsite.nashorn_rendering")
+          result (.invokeMethod script-engine namespc "server_render" (into-array [string-props]))
+          html (String/valueOf result)
+          end (System/currentTimeMillis)]
       (timbre/info "Rendering time (ms): " (- end start))
       html)
     (catch ScriptException e
