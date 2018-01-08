@@ -29,7 +29,7 @@
         html (-> (io/resource "public/index.html")
                slurp
                (str/replace #"<!-- initial html -->" app-html)
-               (sr/replace #"<!-- script -->" script)
+               (str/replace #"<!-- script -->" script)
                (str/replace #"<!-- initial state -->" initial-state-script))]
     html))
 
