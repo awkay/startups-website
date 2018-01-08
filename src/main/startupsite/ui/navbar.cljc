@@ -1,22 +1,10 @@
 (ns startupsite.ui.navbar
   (:require
-    [fulcro.client :as fc]
     [fulcro.client.mutations :as m :refer [defmutation]]
-    [fulcro.client.logging :as log]
-    [fulcro.client.data-fetch :as df]
-    [startupsite.ui.components :as components :refer [ui-placeholder ScrollTarget ui-scroll-target]]
-    translations.es                                         ; preload translations by requiring their namespace. See Makefile for extraction/generation
-    [fulcro.client.dom :as dom]
     #?@(:cljs [[fulcrologic.semantic-ui.factories :as s]
                [fulcrologic.semantic-ui.icons :as i]])
     [fulcro.client.primitives :as prim :refer [defsc]]
-    [fulcro.client.routing :as r :refer [defrouter]]
-    [startupsite.ui.screen-utils :refer [screen-type screen-ident screen-initial-state screen-query clj->js]]
-    [fulcro.i18n :refer [tr trf]]))
-
-(defsc RouterInfo [this props]
-  {:query [::r/id ::r/current-route]
-   :ident [:fulcro.client.routing.routers/by-id ::r/id]})
+    [fulcro.client.routing :as r :refer [defrouter]]))
 
 (def nav-bar-ident [:component/main-nav-bar 1])
 (defn nav-bar-field [f] (conj nav-bar-ident f))

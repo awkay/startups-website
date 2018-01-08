@@ -30,7 +30,7 @@
                slurp
                (str/replace #"<!-- initial html -->" app-html)
                (str/replace #"<!-- script -->" script)
-               (str/replace #"<!-- initial state -->" initial-state-script))]
+               (str/replace "<!-- initial state -->" initial-state-script))]
     html))
 
 (defn build-app-state
