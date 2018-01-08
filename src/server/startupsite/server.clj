@@ -62,7 +62,6 @@
           bidi-match  nil #_(bidi/match-route routing/app-routes uri) ; where they were trying to go. NOTE: This is shared code with the client!
           valid-page? (= "/" uri) #_(boolean bidi-match)
           language    (some-> req :headers (get "accept-language") (str/split #",") first)]
-
       ; . no valid bidi match. BYPASS. We don't handle it.
       (if valid-page?
         (render-page uri bidi-match user language)

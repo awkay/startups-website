@@ -27,7 +27,7 @@
 
   :uberjar-name "startupsite.jar"
 
-  :source-paths ["src/main"]
+  :source-paths ["src/main" "src/server"]
   :test-paths ["src/test"]
   :clean-targets ^{:protect false} ["target" "resources/public/js" "resources/private"]
 
@@ -117,6 +117,7 @@
                                          [com.jakemccrary/lein-test-refresh "0.21.1"]]
 
                           :dependencies [[binaryage/devtools "0.9.8"]
+                                         [hawk "0.2.11"]
                                          [fulcrologic/fulcro-inspect "2.0.0-alpha2"]
                                          [org.clojure/tools.namespace "0.3.0-alpha4"]
                                          [lein-doo "0.1.7" :scope "test"]

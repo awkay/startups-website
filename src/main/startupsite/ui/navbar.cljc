@@ -7,7 +7,6 @@
     [startupsite.ui.components :as components :refer [ui-placeholder ScrollTarget ui-scroll-target]]
     translations.es                                         ; preload translations by requiring their namespace. See Makefile for extraction/generation
     [fulcro.client.dom :as dom]
-    [startupsite.api.mutations :as api]
     #?@(:cljs [[fulcrologic.semantic-ui.factories :as s]
                [fulcrologic.semantic-ui.icons :as i]])
     [fulcro.client.primitives :as prim :refer [defsc]]
