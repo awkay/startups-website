@@ -74,7 +74,7 @@
 
 (defmutation scroll-to
   "Mutation: Scroll the page so that the given ScrollTarget (by id) is at the top of the page."
-  [{:keys [target duration-ms onScrolled] :or {duration-ms 300}}]
+  [{:keys [target duration-ms onScrolled] :or {duration-ms 1000}}]
   (action [{:keys [state]}]
     #?(:clj nil
        :cljs
