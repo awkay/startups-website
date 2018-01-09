@@ -1,0 +1,74 @@
+= Startups Website
+
+This is the source for Fulcrologic's website related to consulting
+for start-up companies.
+
+== SSR
+
+This is a full-stack app that uses SSR via Nashorn so it can also use
+Semanic UI React. The configuration has a number of simple pieces:
+
+- The index.html file has comments that are replaced by the server (state, html, and script tag).
+- The SSR relies on an optimized js file for SSR, and a polyfill. The former must be built or SSR cannot work.
+    - resources/externs.js is for adv. compile to ensure initial state variable is not renamed. See project.clj production cljs build.
+    - There are two builds in the project. One for the SSR Javascript, and one for the production client. The entry points
+      are different, so both are needed.
+- The SSR watches the timestamp of the generated startupsite.ssr.js file and updates nashorn if it changes.
+- The root UI has the queries, and has to be cljc.
+- The client mount *must not run* in SSR mode (there is no DOM). See client_main.cljs. The polyfill sets a global that is used to short-circuit the mount.
+- The nashorn_rendering.cljs exports a `server-render` function that the Nashorn script engine can eval (with UI props) to render a string of DOM
+- See nashorn_rendering.clj for the code that manages the Nashorn instance and rendering.
+- There is no mutable state, so it seems safe to call the render in Nashorn from multiple threads. The data is passed in as args.
+- I get sub 100ms render times once it is up and running...not as good as clj factory methods running on the JVM, but not bad.
+
+== Running in Development Mode
+
+This project embeds the API web server into the Figwheel system and *adds in automatic hot code reload*
+for the server as well as the client. At the moment you need to run:
+
+1. The normal -Ddev figwheel config.
+2. An auto-build of the "ssr" cljs build.
+3. (optional) An nrepl client connecting to 7888 if you want a CLJ REPL
+
+Thus, you're really running with a single VM as far as the server and figwheel are concerned, with a cljs
+build for the SSR code running in a separate window.
+
+The output of the non-advanced compiles will not work on Nashorn. Transit gets double defined and Nashorn crashes.
+If anyone cares to debug that, perhaps we can end up with a faster SSR turnaround.
+
+A command line version of all of this would be:
+
+In terminal A:
+
+```
+JVM_OPTS=-Ddev lein run -m clojure.main script/figwheel.clj
+```
+
+In terminal B:
+
+```
+lein with-profile production cljsbuild auto ssr
+```
+
+Then use http://localhost:3000
+
+The nREPL is on port 7888
+
+Compiler errors for both client and server will appear in the heads-up display in the browser!
+
+== LICENSE
+
+Copyright 2017, Fulcrologic, LLC
+All Rights Reserved
+
+You may read the source code of this project or run it on a local machine for educational purposes
+only.
+
+You may not use it for any other purpose without the express written consent of Fulcrologic, LLC.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS
+BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+OTHER DEALINGS IN THE SOFTWARE.
