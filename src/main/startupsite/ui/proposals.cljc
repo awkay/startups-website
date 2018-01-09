@@ -1,28 +1,26 @@
 (ns startupsite.ui.proposals
   (:require
     [fulcro.client.dom :as dom]
-    #?@(:cljs [[fulcrologic.semantic-ui.factories :as s]
-               [fulcrologic.semantic-ui.icons :as i]])
+    [fulcrologic.semantic-ui.factories :as s]
+    [fulcrologic.semantic-ui.icons :as i]
     [fulcro.client.mutations :as m :refer [defmutation]]
     [fulcro.client.data-fetch :as df]
     [fulcro.client.primitives :as prim :refer [defsc]]))
 
 (defn form-input [id label value required?]
   (let [input-id (str id "-input")]
-    #?(:cljs
-       (s/ui-form-field #js {:required required?}
-         (dom/label #js {:htmlFor input-id} label)
-         (dom/input #js {:id   input-id :value value
-                         :type "text"})))))
+    (s/ui-form-field #js {:required required?}
+      (dom/label #js {:htmlFor input-id} label)
+      (dom/input #js {:id   input-id :value value
+                      :type "text"}))))
 
 (defsc RegistrationForm [this props]
   {}
-  #?(:cljs
-     (s/ui-form nil
-       (form-input "company" "Company Name" "" true)
-       (form-input "contact" "Contact Name" "" true)
-       (form-input "email" "Email" "" true)
-       (form-input "phone" "Phone Number" "" true))))
+  (s/ui-form nil
+    (form-input "company" "Company Name" "" true)
+    (form-input "contact" "Contact Name" "" true)
+    (form-input "email" "Email" "" true)
+    (form-input "phone" "Phone Number" "" true)))
 
 (def ui-registration-form (prim/factory RegistrationForm))
 
@@ -38,54 +36,51 @@
 (defmulti render-question-input (fn [component id type params] type))
 
 (defmethod render-question-input :boolean [this id type {:keys [value label]}]
-  #?(:cljs
-     (s/ui-form nil
-       (s/ui-form-group #js {:grouped true}
-         (dom/label nil label)
-         (s/ui-form-field #js {:inline true}
-           (dom/input #js {:name     id
-                           :onChange (fn [] (prim/transact! this `[(answer-question {:id ~id :value true})]))
-                           :checked  (identical? value true) :type "radio"})
-           (dom/label nil "Yes"))
-         (s/ui-form-field #js {:inline true}
-           (dom/input #js {:name     id
-                           :onChange (fn [] (prim/transact! this `[(answer-question {:id ~id :value false})]))
-                           :checked  (identical? value false) :type "radio"})
-           (dom/label nil "No"))))))
+  (s/ui-form nil
+    (s/ui-form-group #js {:grouped true}
+      (dom/label nil label)
+      (s/ui-form-field #js {:inline true}
+        (dom/input #js {:name     id
+                        :onChange (fn [] (prim/transact! this `[(answer-question {:id ~id :value true})]))
+                        :checked  (identical? value true) :type "radio"})
+        (dom/label nil "Yes"))
+      (s/ui-form-field #js {:inline true}
+        (dom/input #js {:name     id
+                        :onChange (fn [] (prim/transact! this `[(answer-question {:id ~id :value false})]))
+                        :checked  (identical? value false) :type "radio"})
+        (dom/label nil "No")))))
 
 (defmethod render-question-input :multi-select [this id type {:keys [label value params] :or {value #{}}}]
-  #?(:cljs
-     (s/ui-form nil
-       (s/ui-form-group #js {:grouped true}
-         (dom/label nil label)
-         (map-indexed
-           (fn [idx opt]
-             (s/ui-form-field #js {:inline true :key (str "checkbox-" idx)}
-               (dom/input #js {:name     id
-                               :onChange (fn []
-                                           (let [v                (:option/value opt)
-                                                 already-present? (contains? value (:option/value opt))
-                                                 checked-value    (if already-present?
-                                                                    (disj value v)
-                                                                    (conj (or value #{}) v))]
-                                             (prim/transact! this `[(answer-question {:id ~id :value ~checked-value})])))
-                               :checked  (contains? value (:option/value opt))
-                               :type     "checkbox"})
-               (dom/label nil (:option/label opt)))) params)))))
+  (s/ui-form nil
+    (s/ui-form-group #js {:grouped true}
+      (dom/label nil label)
+      (map-indexed
+        (fn [idx opt]
+          (s/ui-form-field #js {:inline true :key (str "checkbox-" idx)}
+            (dom/input #js {:name     id
+                            :onChange (fn []
+                                        (let [v                (:option/value opt)
+                                              already-present? (contains? value (:option/value opt))
+                                              checked-value    (if already-present?
+                                                                 (disj value v)
+                                                                 (conj (or value #{}) v))]
+                                          (prim/transact! this `[(answer-question {:id ~id :value ~checked-value})])))
+                            :checked  (contains? value (:option/value opt))
+                            :type     "checkbox"})
+            (dom/label nil (:option/label opt)))) params))))
 
 (defmethod render-question-input :radio-select [this id type {:keys [label value params]}]
-  #?(:cljs
-     (s/ui-form nil
-       (s/ui-form-group #js {:grouped true}
-         (dom/label nil label)
-         (map-indexed
-           (fn [idx {l :option/label v :option/value}]
-             (s/ui-form-field #js {:inline true :key (str "radio-" idx)}
-               (dom/input #js {:name     id
-                               :onChange (fn [] (prim/transact! this `[(answer-question {:id ~id :value ~v})]))
-                               :checked  (= value v)
-                               :type     "radio"})
-               (dom/label nil l))) params)))))
+  (s/ui-form nil
+    (s/ui-form-group #js {:grouped true}
+      (dom/label nil label)
+      (map-indexed
+        (fn [idx {l :option/label v :option/value}]
+          (s/ui-form-field #js {:inline true :key (str "radio-" idx)}
+            (dom/input #js {:name     id
+                            :onChange (fn [] (prim/transact! this `[(answer-question {:id ~id :value ~v})]))
+                            :checked  (= value v)
+                            :type     "radio"})
+            (dom/label nil l))) params))))
 
 (defsc SurveyAnswer [this {:keys [db/id survey-answer/value] :as props} {:keys [type label params]}]
   {:query         [:db/id :survey-answer/value]
@@ -116,26 +111,25 @@
            :survey-question/params
            {:survey-question/answer (prim/get-query SurveyAnswer)}]
    :ident (fn [] [:survey-question/by-id id])}
-  #?(:cljs
-     (let [last-step? (= last-step step)]
-       (s/ui-list-item nil
-         (s/ui-segment #js {:raised true}
-           (s/ui-header nil
-             (s/ui-icon #js {:name (or icon "plug")})
-             (s/ui-header-content nil title))
-           (s/ui-container #js {:style #js {:padding "1em 1em"}}
-             context
-             (s/ui-divider nil)
-             (s/ui-container #js {}
-               (ui-survey-answer answer {:type type :label label :params params})
-               (s/ui-button #js {:color    "green"
-                                 :onClick  #(when onPrevious (onPrevious))
-                                 :disabled (= 0 step)} "Back")
-               (s/ui-button #js {:color    "green"
-                                 :onClick  (if last-step?
-                                             #(when onSubmit (onSubmit))
-                                             #(when onNext (onNext)))
-                                 :disabled (answer-missing? answer)} (if last-step? "Submit" "Next")))))))))
+  (let [last-step? (= last-step step)]
+    (s/ui-list-item nil
+      (s/ui-segment #js {:raised true}
+        (s/ui-header nil
+          (s/ui-icon #js {:name (or icon "plug")})
+          (s/ui-header-content nil title))
+        (s/ui-container #js {:style #js {:padding "1em 1em"}}
+          context
+          (s/ui-divider nil)
+          (s/ui-container #js {}
+            (ui-survey-answer answer {:type type :label label :params params})
+            (s/ui-button #js {:color    "green"
+                              :onClick  #(when onPrevious (onPrevious))
+                              :disabled (= 0 step)} "Back")
+            (s/ui-button #js {:color    "green"
+                              :onClick  (if last-step?
+                                          #(when onSubmit (onSubmit))
+                                          #(when onNext (onNext)))
+                              :disabled (answer-missing? answer)} (if last-step? "Submit" "Next"))))))))
 
 (def ui-survey-question (prim/factory SurveyQuestion {:keyfn :db/id}))
 
@@ -153,22 +147,21 @@
   {:query         [:ui/step :db/id {:survey/questions (prim/get-query SurveyQuestion)}]
    :ident         [:survey/by-id :db/id]
    :initial-state {}}
-  #?(:cljs
-     (let [next-question  (fn [] (prim/transact! this `[(next-question {:survey-id ~id})]))
-           prior-question (fn [] (prim/transact! this `[(prior-question {:survey-id ~id})]))
-           finish         (fn [] (js/console.log "DONE!"))
-           last-step      (dec (count questions))
-           question       (when (pos? last-step) (nth questions step))]
-       (when question
-         (dom/div nil
-           (s/ui-header nil "Survey")
-           (s/ui-button #js {:onClick #(df/load this :query/proposal-survey Survey {:marker false
-                                                                                    :target [:submit-proposal :page :ui/survey]})} "Reload Survey")
-           (ui-survey-question (prim/computed question {:onPrevious prior-question
-                                                        :step       step
-                                                        :last-step  last-step
-                                                        :onSubmit   finish
-                                                        :onNext     next-question})))))))
+  (let [next-question  (fn [] (prim/transact! this `[(next-question {:survey-id ~id})]))
+        prior-question (fn [] (prim/transact! this `[(prior-question {:survey-id ~id})]))
+        finish         (fn [])
+        last-step      (dec (count questions))
+        question       (when (pos? last-step) (nth questions step))]
+    (when question
+      (dom/div nil
+        (s/ui-header nil "Survey")
+        (s/ui-button #js {:onClick #(df/load this :query/proposal-survey Survey {:marker false
+                                                                                 :target [:submit-proposal :page :ui/survey]})} "Reload Survey")
+        (ui-survey-question (prim/computed question {:onPrevious prior-question
+                                                     :step       step
+                                                     :last-step  last-step
+                                                     :onSubmit   finish
+                                                     :onNext     next-question}))))))
 
 (def ui-survey (prim/factory Survey {:keyfn :db/id}))
 
@@ -189,24 +182,23 @@
    :ident             (fn [] [screen-name :page])
    :initial-state     (fn [params]
                         {:screen-name :submit-proposal})}
-  #?(:cljs
-     (dom/div nil
-       (s/ui-segment #js {:style #js {:padding "2em 0em"} :vertical true}
-         (s/ui-grid #js {:container true :stackable true :verticalAlign "middle"}
-           (s/ui-grid-row #js {}
-             (s/ui-grid-column #js {:width 16}
-               (dom/h1 nil "Register and Tell Us More")
-               (dom/p nil
-                 "We're excited to hear from you! We'd love to be able to help out every single client
-                 that has interest in our services. Here's how it works:")
-               (s/ui-list #js {:bulleted true}
-                 (s/ui-list-item nil "Take a short survey to see if we're a match.")
-                 (s/ui-list-item nil "If that checks out, then register for an account!")
-                 (s/ui-list-item nil "The registration process will help you submit a non-disclosure agreement.")
-                 (s/ui-list-item nil "Once an NDA is executed we'll schedule a consultation to talk more."))
-               (dom/p nil
-                 "Please start by completing this short survey.")))
-           (s/ui-grid-row #js {}
-             (s/ui-grid-column #js {:width 16}
-               (ui-survey survey))))))))
+  (dom/div nil
+    (s/ui-segment #js {:style #js {:padding "2em 0em"} :vertical true}
+      (s/ui-grid #js {:container true :stackable true :verticalAlign "middle"}
+        (s/ui-grid-row #js {}
+          (s/ui-grid-column #js {:width 16}
+            (dom/h1 nil "Register and Tell Us More")
+            (dom/p nil
+              "We're excited to hear from you! We'd love to be able to help out every single client
+              that has interest in our services. Here's how it works:")
+            (s/ui-list #js {:bulleted true}
+              (s/ui-list-item nil "Take a short survey to see if we're a match.")
+              (s/ui-list-item nil "If that checks out, then register for an account!")
+              (s/ui-list-item nil "The registration process will help you submit a non-disclosure agreement.")
+              (s/ui-list-item nil "Once an NDA is executed we'll schedule a consultation to talk more."))
+            (dom/p nil
+              "Please start by completing this short survey.")))
+        (s/ui-grid-row #js {}
+          (s/ui-grid-column #js {:width 16}
+            (ui-survey survey)))))))
 

@@ -89,8 +89,8 @@
   {:query         [:db/id :scroll-target/element]
    :ident         [:scroll-target/by-id :db/id]
    :initial-state {:db/id :param/id :scroll-target/element {}}}
-  #?(:cljs (dom/div #js {
-                         :ref (fn [r] (when r
-                                        (m/set-value! this :scroll-target/element (with-meta {} {:dom-node r}))))} "")))
+  (dom/div #js {
+                :ref (fn [r] (when r
+                               (m/set-value! this :scroll-target/element (with-meta {} {:dom-node r}))))} ""))
 
 (def ui-scroll-target (prim/factory ScrollTarget {:keyfn :db/id}))

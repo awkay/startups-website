@@ -1,8 +1,8 @@
 (ns startupsite.ui.navbar
   (:require
     [fulcro.client.mutations :as m :refer [defmutation]]
-    #?@(:cljs [[fulcrologic.semantic-ui.factories :as s]
-               [fulcrologic.semantic-ui.icons :as i]])
+    [fulcrologic.semantic-ui.factories :as s]
+    [fulcrologic.semantic-ui.icons :as i]
     [fulcro.client.primitives :as prim :refer [defsc]]
     [startupsite.ui.html5-routing :refer [nav-to!]]
     [fulcro.client.routing :as r :refer [defrouter]]))
@@ -28,21 +28,20 @@
   (let [options       (if fixed? #js {:fixed "top" :size "large"}
                                  #js {:inverted true :pointing true :secondary true :size "large"})
         active-screen (current-screen props :top-router)]
-    #?(:cljs
-       (s/ui-container nil
-         (s/ui-menu options
-           (s/ui-menu-item #js {:as      "a"
-                                :onClick #(nav-to! this :home-page)
-                                :active  (= :home-page active-screen)} "Home")
-           (s/ui-menu-item #js {:onClick #(nav-to! this :submit-proposal)
-                                :active  (= :submit-proposal active-screen)
-                                :as      "a"} "Send a Proposal")
-           (s/ui-menu-item #js {:as "a"} "Company")
-           (s/ui-menu-item #js {:as "a"} "Careers")
-           (comment
-             (s/ui-menu-item #js {:position "right"}
-               (s/ui-button #js {:as "a" :inverted true} "Log in")
-               (s/ui-button #js {:as "a" :inverted true :style #js {:marginLeft "0.5em"}} "Sign Up"))))))))
+    (s/ui-container nil
+      (s/ui-menu options
+        (s/ui-menu-item #js {:as      "a"
+                             :onClick #(nav-to! this :home-page)
+                             :active  (= :home-page active-screen)} "Home")
+        (s/ui-menu-item #js {:onClick #(nav-to! this :submit-proposal)
+                             :active  (= :submit-proposal active-screen)
+                             :as      "a"} "Send a Proposal")
+        (s/ui-menu-item #js {:as "a"} "Company")
+        (s/ui-menu-item #js {:as "a"} "Careers")
+        (comment
+          (s/ui-menu-item #js {:position "right"}
+            (s/ui-button #js {:as "a" :inverted true} "Log in")
+            (s/ui-button #js {:as "a" :inverted true :style #js {:marginLeft "0.5em"}} "Sign Up")))))))
 
 (let [factory (prim/factory NavBar)]
   (defn ui-nav-bar [props & {:keys [fixed-only?] :or {fixed-only? false}}]
