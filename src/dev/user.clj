@@ -36,14 +36,6 @@
   (stop)
   (tools-ns/refresh :after 'user/start))
 
-(comment
-
-  (let [a (re-find #"^.*compiling:[(]([^:]*):(\d+):(\d+)"
-        "java.lang.RuntimeException: No such namespace: esy, compiling:(startupsite/server.clj:85:7)")]
-    a)
-  (Long/parseLong "1")
-  )
-
 (defn extract-details [source-dir compile-exception]
   (let [msg (.getMessage compile-exception)
         [_ file line col] (re-find #"^.*compiling:[(]([^:]*):(\d+):(\d+)" msg)]

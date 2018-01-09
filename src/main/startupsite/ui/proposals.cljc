@@ -23,13 +23,16 @@
 
 (def ui-registration-form (prim/factory RegistrationForm))
 
-(defn answer-question* [state-map id value] state-map)
+(defn answer-question* [state-map id value]
+  (assoc-in state-map [:survey-answer/by-id id :survey-answer/value] value))
 
 (defmutation answer-question [{:keys [id value]}]
   (action [{:keys [state]}]
-    (swap! state answer-question* id value)))
+    (swap! state answer-question* id value))
+  (refresh [env]
+    [:survey/questions]))
 
-(defmulti render-question-input (fn [id type label value] type))
+(defmulti render-question-input (fn [component id type label value] type))
 
 (defmethod render-question-input :boolean [this id type label value]
   (s/ui-form nil
@@ -39,14 +42,32 @@
         (dom/label nil "Yes")
         (dom/input #js {:name     id
                         :onChange (fn [] (prim/transact! this `[(answer-question {:id ~id :value true})]))
-                        :checked  (= value true) :type "radio"}))
+                        :checked  (identical? value true) :type "radio"}))
       (s/ui-form-field #js {:inline true}
         (dom/label nil "No")
-        (dom/input #js {:name id
+        (dom/input #js {:name     id
                         :onChange (fn [] (prim/transact! this `[(answer-question {:id ~id :value false})]))
-                        :checked (= value false) :type "radio"})))))
+                        :checked  (identical? value false) :type "radio"})))))
 
-(defn render-question [id type value context label]
+(defsc SurveyAnswer [this {:keys [db/id survey-answer/value] :as props} {:keys [type label]}]
+  {:query         [:db/id :survey-answer/value]
+   :ident         [:survey-answer/by-id :db/id]
+   :initial-state {:db/id :param/id}}
+  (render-question-input this id type label value))
+
+(let [factory (prim/factory SurveyAnswer {:keyfn :db/id})]
+  (defn ui-survey-answer [props type label]
+    (factory (prim/computed props {:type type :label label}))))
+
+(defn answer-missing? [answer] (nil? (:survey-answer/value answer)))
+
+(defsc SurveyQuestion
+  [this {:keys [db/id survey-question/type
+                survey-question/context survey-question/label
+                survey-question/answer]}]
+  {:query [:db/id :survey-question/type :survey-question/context :survey-question/label
+           {:survey-question/answer (prim/get-query SurveyAnswer)}]
+   :ident (fn [] [:survey-question/by-id id])}
   (s/ui-list-item nil
     (s/ui-segment #js {:raised true}
       (s/ui-header nil
@@ -57,16 +78,8 @@
         context
         (s/ui-divider nil)
         (s/ui-container #js {}
-          (render-question-input this id type label value)
-          )))))
-
-(defsc SurveyQuestion
-  [this {:keys [db/id survey-question/type
-                survey-question/context survey-question/label]}]
-  {:query [:db/id :survey-question/type :survey-question/context :survey-question/label]
-   :ident (fn [] [:survey-question/by-id id])}
-  (let [value false]
-    (render-question id type value context label)))
+          (ui-survey-answer answer type label)
+          (s/ui-button #js {:color "green" :disabled (answer-missing? answer)} "Next"))))))
 
 (def ui-survey-question (prim/factory SurveyQuestion {:keyfn :db/id}))
 
@@ -76,14 +89,13 @@
    :initial-state (fn [p]
                     {:db/id            1
                      :ui/step          0
-                     :survey/questions [{:db/id                 1
+                     :survey/questions [{:db/id                  1
                                          :survey-question/context
-                                                                "Experience shows that an minimally viable product launch can easily take
-                                                                6 months of development time. Our up-front rate is $30/hr. This means
-                                                                full-time development costs $5,160/month and your project
-                                                                launch will likely cost $30k or perhaps much more."
-                                         :survey-question/label "Is this manageable?"
-                                         :survey-question/type  :boolean}]})}
+                                                                 "Experience shows that an minimally viable product launch can easily take 6 months of development time. Our up-front rate is negotiable but averages $30/hr. This means full-time development costs $5,160/month and your project launch will likely cost $30k or perhaps much more."
+                                         :survey-question/label  "Is this manageable?"
+                                         :survey-question/answer {:db/id               99
+                                                                  :survey-answer/value nil}
+                                         :survey-question/type   :boolean}]})}
   (dom/div nil
     (s/ui-header nil "Survey")
     (ui-survey-question (nth questions step))))

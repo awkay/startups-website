@@ -5,10 +5,10 @@
     translations.es                                         ; preload translations by requiring their namespace. See Makefile for extraction/generation
     [fulcro.client.dom :as dom]
     [fulcrologic.semantic-ui.factories :as s]
-    [fulcrologic.semantic-ui.icons :as i]
     [fulcro.client.primitives :as prim :refer [defsc]]
     [fulcro.client.routing :as r :refer [defrouter]]
     [startupsite.ui.proposals :as pro]
+    [startupsite.ui.html5-routing :as routing]
     [startupsite.ui.navbar :as nav :refer [NavBar]]))
 
 (declare TopRouter)
@@ -108,17 +108,12 @@
 
 (def ui-top-router (prim/factory TopRouter))
 
-(def routing-tree
-  (r/routing-tree
-    (r/make-route :home-page [(r/router-instruction :top-router [:home-page :page])])
-    (r/make-route :submit-proposal [(r/router-instruction :top-router [:submit-proposal :page])])
-    ))
-
 (defsc Root [this {:keys [ui/top-router ui/main-nav-bar]}]
   {:initial-state (fn [params]
-                    (merge routing-tree
-                      {:ui/main-nav-bar (prim/get-initial-state NavBar {})}
-                      {:ui/top-router (prim/get-initial-state TopRouter {})}))
+                    (merge routing/routing-tree
+                      {:ui/main-nav-bar (prim/get-initial-state NavBar {})
+                       :ui/ready?       true
+                       :ui/top-router   (prim/get-initial-state TopRouter {})}))
    :query         [{:ui/main-nav-bar (prim/get-query NavBar)}
                    {:ui/top-router (prim/get-query TopRouter)}]}
   (dom/div nil
@@ -128,7 +123,4 @@
       (s/ui-segment #js {:inverted true}
         (nav/ui-nav-bar main-nav-bar :fixed-only? true)
         (nav/ui-nav-bar main-nav-bar)))
-    (ui-top-router top-router)))
-
-
-
+    #_(ui-top-router top-router)))

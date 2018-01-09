@@ -17,6 +17,10 @@
                  [fulcrologic/fulcro-sql "0.3.0"]
                  [org.postgresql/postgresql "42.1.4"]
 
+                 ; routing
+                 [bidi "2.1.2"]
+                 [kibu/pushy "0.3.8"]
+
                  ; pinned
                  [cljsjs/react "15.6.2-1"]
                  [cljsjs/react-dom "15.6.2-1"]
@@ -39,7 +43,8 @@
                         :jar          true
                         :compiler     {:asset-path     "js/prod"
                                        :parallel-build true
-                                       :optimizations  :advanced
+                                       :optimizations  :whitespace
+                                       :main           "startupsite.nashorn-rendering"
                                        :externs        ["externs.js"]
                                        :output-dir     "resources/public/js/prod"
                                        :output-to      "resources/public/js/startupsite.min.js"
@@ -68,7 +73,7 @@
 
                           :cljsbuild    {:builds
                                          [{:id           "dev"
-                                           :figwheel     {:on-jsload "cljs.user/mount" }
+                                           :figwheel     {:on-jsload "cljs.user/mount"}
                                            :source-paths ["src/dev" "src/main"]
                                            :compiler     {:asset-path           "js/dev"
                                                           :main                 cljs.user
