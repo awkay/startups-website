@@ -4,6 +4,7 @@
     #?@(:cljs [[fulcrologic.semantic-ui.factories :as s]
                [fulcrologic.semantic-ui.icons :as i]])
     [fulcro.client.mutations :as m :refer [defmutation]]
+    [fulcro.client.data-fetch :as df]
     [fulcro.client.primitives :as prim :refer [defsc]]))
 
 (defn form-input [id label value required?]
@@ -34,85 +35,160 @@
   (refresh [env]
     [:survey/questions]))
 
-(defmulti render-question-input (fn [component id type label value] type))
+(defmulti render-question-input (fn [component id type params] type))
 
-(defmethod render-question-input :boolean [this id type label value]
+(defmethod render-question-input :boolean [this id type {:keys [value label]}]
   #?(:cljs
      (s/ui-form nil
        (s/ui-form-group #js {:grouped true}
          (dom/label nil label)
          (s/ui-form-field #js {:inline true}
-           (dom/label nil "Yes")
            (dom/input #js {:name     id
                            :onChange (fn [] (prim/transact! this `[(answer-question {:id ~id :value true})]))
-                           :checked  (identical? value true) :type "radio"}))
+                           :checked  (identical? value true) :type "radio"})
+           (dom/label nil "Yes"))
          (s/ui-form-field #js {:inline true}
-           (dom/label nil "No")
            (dom/input #js {:name     id
                            :onChange (fn [] (prim/transact! this `[(answer-question {:id ~id :value false})]))
-                           :checked  (identical? value false) :type "radio"}))))))
+                           :checked  (identical? value false) :type "radio"})
+           (dom/label nil "No"))))))
 
-(defsc SurveyAnswer [this {:keys [db/id survey-answer/value] :as props} {:keys [type label]}]
+(defmethod render-question-input :multi-select [this id type {:keys [label value params] :or {value #{}}}]
+  #?(:cljs
+     (s/ui-form nil
+       (s/ui-form-group #js {:grouped true}
+         (dom/label nil label)
+         (map-indexed
+           (fn [idx opt]
+             (s/ui-form-field #js {:inline true :key (str "checkbox-" idx)}
+               (dom/input #js {:name     id
+                               :onChange (fn []
+                                           (let [v                (:option/value opt)
+                                                 already-present? (contains? value (:option/value opt))
+                                                 checked-value    (if already-present?
+                                                                    (disj value v)
+                                                                    (conj (or value #{}) v))]
+                                             (prim/transact! this `[(answer-question {:id ~id :value ~checked-value})])))
+                               :checked  (contains? value (:option/value opt))
+                               :type     "checkbox"})
+               (dom/label nil (:option/label opt)))) params)))))
+
+(defmethod render-question-input :radio-select [this id type {:keys [label value params]}]
+  #?(:cljs
+     (s/ui-form nil
+       (s/ui-form-group #js {:grouped true}
+         (dom/label nil label)
+         (map-indexed
+           (fn [idx {l :option/label v :option/value}]
+             (s/ui-form-field #js {:inline true :key (str "radio-" idx)}
+               (dom/input #js {:name     id
+                               :onChange (fn [] (prim/transact! this `[(answer-question {:id ~id :value ~v})]))
+                               :checked  (= value v)
+                               :type     "radio"})
+               (dom/label nil l))) params)))))
+
+(defsc SurveyAnswer [this {:keys [db/id survey-answer/value] :as props} {:keys [type label params]}]
   {:query         [:db/id :survey-answer/value]
    :ident         [:survey-answer/by-id :db/id]
    :initial-state {:db/id :param/id}}
-  (render-question-input this id type label value))
+  (render-question-input this id type {:value value :label label :params params}))
 
 (let [factory (prim/factory SurveyAnswer {:keyfn :db/id})]
-  (defn ui-survey-answer [props type label]
-    (factory (prim/computed props {:type type :label label}))))
+  (defn ui-survey-answer [props params]
+    (factory (prim/computed props params))))
 
 (defn answer-missing? [answer] (nil? (:survey-answer/value answer)))
 
 (defsc SurveyQuestion
   [this {:keys [db/id survey-question/type
-                survey-question/context survey-question/label
-                survey-question/answer]}]
-  {:query [:db/id :survey-question/type :survey-question/context :survey-question/label
+                survey-question/icon
+                survey-question/context
+                survey-question/label
+                survey-question/params
+                survey-question/title
+                survey-question/answer]} {:keys [onNext onPrevious onSubmit step last-step]}]
+  {:query [:db/id
+           :survey-question/type
+           :survey-question/icon
+           :survey-question/context
+           :survey-question/title
+           :survey-question/label
+           :survey-question/params
            {:survey-question/answer (prim/get-query SurveyAnswer)}]
    :ident (fn [] [:survey-question/by-id id])}
   #?(:cljs
-     (s/ui-list-item nil
-       (s/ui-segment #js {:raised true}
-         (s/ui-header nil
-           (s/ui-icon #js {:name "plug"})
-           (s/ui-header-content nil
-             "Project Costs"))
-         (s/ui-container #js {:style #js {:padding "1em 1em"}}
-           context
-           (s/ui-divider nil)
-           (s/ui-container #js {}
-             (ui-survey-answer answer type label)
-             (s/ui-button #js {:color "green" :disabled (answer-missing? answer)} "Next")))))))
+     (let [last-step? (= last-step step)]
+       (s/ui-list-item nil
+         (s/ui-segment #js {:raised true}
+           (s/ui-header nil
+             (s/ui-icon #js {:name (or icon "plug")})
+             (s/ui-header-content nil title))
+           (s/ui-container #js {:style #js {:padding "1em 1em"}}
+             context
+             (s/ui-divider nil)
+             (s/ui-container #js {}
+               (ui-survey-answer answer {:type type :label label :params params})
+               (s/ui-button #js {:color    "green"
+                                 :onClick  #(when onPrevious (onPrevious))
+                                 :disabled (= 0 step)} "Back")
+               (s/ui-button #js {:color    "green"
+                                 :onClick  (if last-step?
+                                             #(when onSubmit (onSubmit))
+                                             #(when onNext (onNext)))
+                                 :disabled (answer-missing? answer)} (if last-step? "Submit" "Next")))))))))
 
 (def ui-survey-question (prim/factory SurveyQuestion {:keyfn :db/id}))
+
+(defmutation next-question [{:keys [survey-id]}]
+  (action [{:keys [state]}]
+    (let [step-path [:survey/by-id survey-id :ui/step]]
+      (swap! state update-in step-path inc))))
+
+(defmutation prior-question [{:keys [survey-id]}]
+  (action [{:keys [state]}]
+    (let [step-path [:survey/by-id survey-id :ui/step]]
+      (swap! state update-in step-path dec))))
 
 (defsc Survey [this {:keys [:db/id :survey/questions ui/step] :as props}]
   {:query         [:ui/step :db/id {:survey/questions (prim/get-query SurveyQuestion)}]
    :ident         [:survey/by-id :db/id]
-   :initial-state (fn [p]
-                    {:db/id            1
-                     :ui/step          0
-                     :survey/questions [{:db/id                  1
-                                         :survey-question/context
-                                                                 "Experience shows that an minimally viable product launch can easily take 6 months of development time. Our up-front rate is negotiable but averages $30/hr. This means full-time development costs $5,160/month and your project launch will likely cost $30k or perhaps much more."
-                                         :survey-question/label  "Is this manageable?"
-                                         :survey-question/answer {:db/id               99
-                                                                  :survey-answer/value nil}
-                                         :survey-question/type   :boolean}]})}
+   :initial-state {}}
   #?(:cljs
-     (dom/div nil
-       (s/ui-header nil "Survey")
-       (ui-survey-question (nth questions step)))))
+     (let [next-question  (fn [] (prim/transact! this `[(next-question {:survey-id ~id})]))
+           prior-question (fn [] (prim/transact! this `[(prior-question {:survey-id ~id})]))
+           finish         (fn [] (js/console.log "DONE!"))
+           last-step      (dec (count questions))
+           question       (when (pos? last-step) (nth questions step))]
+       (when question
+         (dom/div nil
+           (s/ui-header nil "Survey")
+           (s/ui-button #js {:onClick #(df/load this :query/proposal-survey Survey {:marker false
+                                                                                    :target [:submit-proposal :page :ui/survey]})} "Reload Survey")
+           (ui-survey-question (prim/computed question {:onPrevious prior-question
+                                                        :step       step
+                                                        :last-step  last-step
+                                                        :onSubmit   finish
+                                                        :onNext     next-question})))))))
 
 (def ui-survey (prim/factory Survey {:keyfn :db/id}))
 
+(defn survey-missing? [state-map] (not (some-> state-map :survey/by-id seq)))
+
+(defmutation ensure-survey-loaded [params]
+  (action [{:keys [state] :as env}]
+    (when (survey-missing? @state)
+      (df/load-action env :query/proposal-survey Survey {:marker false
+                                                         :target [:submit-proposal :page :ui/survey]})))
+  (remote [{:keys [state] :as env}]
+    (when (survey-missing? @state)
+      (df/remote-load env))))
+
 (defsc SubmitProposal [this {:keys [screen-name ui/survey] :as props}]
-  {:query         (fn [] [:screen-name {:ui/survey (prim/get-query Survey)}])
-   :ident         (fn [] [screen-name :page])
-   :initial-state (fn [params]
-                    {:screen-name :submit-proposal
-                     :ui/survey   (prim/get-initial-state Survey {})})}
+  {:query             (fn [] [:screen-name {:ui/survey (prim/get-query Survey)}])
+   :componentDidMount (fn [] (prim/transact! this `[(ensure-survey-loaded {})]))
+   :ident             (fn [] [screen-name :page])
+   :initial-state     (fn [params]
+                        {:screen-name :submit-proposal})}
   #?(:cljs
      (dom/div nil
        (s/ui-segment #js {:style #js {:padding "2em 0em"} :vertical true}
@@ -132,6 +208,5 @@
                  "Please start by completing this short survey.")))
            (s/ui-grid-row #js {}
              (s/ui-grid-column #js {:width 16}
-               (ui-survey survey)
-               )))))))
+               (ui-survey survey))))))))
 
