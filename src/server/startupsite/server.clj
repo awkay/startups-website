@@ -1,5 +1,7 @@
 (ns startupsite.server
   (:require
+    startupsite.api.read
+    startupsite.api.mutations
     [fulcro.server :as core]
     [fulcro.easy-server :as easy]
     [com.stuartsierra.component :as component]

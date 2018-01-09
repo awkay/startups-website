@@ -25,7 +25,7 @@ This project embeds the control of the API web server into the Figwheel system a
  for the server as well as the client. At the moment you need to run:
 
 1. The normal -Ddev figwheel config
-2. An auto-build of the production cljs build
+2. An auto-build of the "ssr" cljs build
 3. (optional) An nrepl client connecting to 7888 if you want a CLJ REPL
 
 Thus, you're really running with a single VM as far as the server and figwheel are concerned but the production cljs
@@ -42,7 +42,7 @@ JVM_OPTS=-Ddev lein run -m clojure.main script/figwheel.clj
 In terminal B:
 
 ```
-lein with-profile production cljsbuild auto production
+lein with-profile production cljsbuild auto ssr
 ```
 
 Then use http://localhost:3000

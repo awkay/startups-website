@@ -6,7 +6,7 @@
            (jdk.nashorn.api.scripting NashornScriptEngine)
            (java.io File)))
 
-(def production-js "public/js/startupsite.min.js")
+(def ssr-js "public/js/startupsite.ssr.js")
 
 (defonce nashorn (atom nil))
 (defn build-engine [] (-> (ScriptEngineManager.) (.getEngineByName "nashorn")))
@@ -27,19 +27,23 @@
 (defonce last-compile-time (atom 0))
 
 (defn- stale? [file]
-  (let [^File f (io/as-file file)]
-    (and f (.exists f) (> (.lastModified f) @last-compile-time))))
+  (when (System/getProperty "dev")
+    (let [^File f (io/as-file file)]
+      (and f (.exists f) (> (.lastModified f) @last-compile-time)))))
+
+(defn eval-javascript []
+  (let [start         (System/currentTimeMillis)
+        script-engine ^NashornScriptEngine @nashorn
+        _             (.eval script-engine (read-js "public/nashorn-polyfill.js"))
+        _             (.eval script-engine (read-js ssr-js))
+        end           (System/currentTimeMillis)]
+    (reset! last-compile-time end)
+    (timbre/info "JS Eval took (ms): " (- end start))))
 
 (defn load-and-eval-js []
   (locking last-compile-time
-    (when (stale? (io/resource production-js))
-      (let [start (System/currentTimeMillis)
-            script-engine ^NashornScriptEngine @nashorn
-            _ (.eval script-engine (read-js "public/nashorn-polyfill.js"))
-            _ (.eval script-engine (read-js production-js))
-            end (System/currentTimeMillis)]
-        (reset! last-compile-time end)
-        (timbre/info "JS Eval took (ms): " (- end start))))))
+    (when (or (= 0 @last-compile-time) (stale? (io/resource ssr-js)))
+      (eval-javascript))))
 
 (defn ^String nashorn-render
   "Render the given tree of props via Nashorn. Returns the HTML as a string."
@@ -47,16 +51,16 @@
   (try
     (locking nashorn (start-nashorn))
     (load-and-eval-js)
-    (let [start (System/currentTimeMillis)
-          string-props (cutil/transit-clj->str props)
+    (let [start         (System/currentTimeMillis)
+          string-props  (cutil/transit-clj->str props)
           script-engine ^NashornScriptEngine @nashorn
-          namespc (.eval script-engine "startupsite.nashorn_rendering")
-          result (.invokeMethod script-engine namespc "server_render" (into-array [string-props]))
-          html (String/valueOf result)
-          end (System/currentTimeMillis)]
+          namespc       (.eval script-engine "startupsite.nashorn_rendering")
+          result        (.invokeMethod script-engine namespc "server_render" (into-array [string-props]))
+          html          (String/valueOf result)
+          end           (System/currentTimeMillis)]
       (timbre/info "Rendering time (ms): " (- end start))
       html)
-    (catch ScriptException e
+    (catch Throwable e
       (timbre/debug "Server-side render failed. This is an expected error when not running from a production build with adv optimizations.")
       (timbre/error "Rendering exception:" e)
       "Loading... (SSR disabled. Did you forget to build the production js?)")))

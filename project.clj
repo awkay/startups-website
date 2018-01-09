@@ -35,10 +35,18 @@
   :test-paths ["src/test"]
   :clean-targets ^{:protect false} ["target" "resources/public/js" "resources/private"]
 
-  ; Notes  on production build:
-  ; - The hot code reload stuff in the dev profile WILL BREAK ADV COMPILATION. So, make sure you
-  ; use `lein with-profile production cljsbuild once production` to build!
   :cljsbuild {:builds [{:id           "production"
+                        :source-paths ["src/main"]
+                        :jar          true
+                        :compiler     {:asset-path     "js/prod"
+                                       :parallel-build true
+                                       :optimizations  :advanced
+                                       :main           "startupsite.client-main"
+                                       :externs        ["externs.js"]
+                                       :output-dir     "resources/public/js/prod"
+                                       :output-to      "resources/public/js/startupsite.min.js"
+                                       :source-map     "resources/public/js/startupsite.min.js.map"}}
+                       {:id           "ssr"
                         :source-paths ["src/main"]
                         :jar          true
                         :compiler     {:asset-path     "js/prod"
@@ -46,15 +54,16 @@
                                        :optimizations  :advanced
                                        :main           "startupsite.nashorn-rendering"
                                        :externs        ["externs.js"]
-                                       :output-dir     "resources/public/js/prod"
-                                       :output-to      "resources/public/js/startupsite.min.js"
-                                       :source-map     "resources/public/js/startupsite.min.js.map"}}]}
+                                       :output-dir     "resources/public/js/ssr"
+                                       :output-to      "resources/public/js/startupsite.ssr.js"
+                                       :source-map     "resources/public/js/startupsite.ssr.js.map"}}]}
 
   :profiles {:uberjar    {:main           startupsite.server-main
                           :aot            :all
                           :jar-exclusions [#"public/js/prod" #"com/google.*js$"]
                           :prep-tasks     ["clean" ["clean"]
-                                           "compile" ["with-profile" "production" "cljsbuild" "once" "production"]]}
+                                           "compile" ["with-profile" "production" "cljsbuild" "once" "production"]
+                                           "compile" ["with-profile" "production" "cljsbuild" "once" "ssr"]]}
              :production {}
              :dev        {:source-paths ["src/dev" "src/main" "src/test" "src/cards"]
 
