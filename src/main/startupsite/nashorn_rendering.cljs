@@ -1,9 +1,7 @@
 (ns startupsite.nashorn-rendering
-  (:require [fulcro.client.primitives :as prim]
+  (:require cljsjs.react.dom.server
+            [fulcro.client.primitives :as prim]
             [startupsite.ui.root :as root]
-            [fulcro.client :as fc]
-            cljsjs.react.dom.server
-            [fulcro.client.logging :as log]
             [fulcro.client.util :as util]))
 
 (def ui-root (prim/factory root/Root))

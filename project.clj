@@ -43,7 +43,7 @@
                         :jar          true
                         :compiler     {:asset-path     "js/prod"
                                        :parallel-build true
-                                       :optimizations  :whitespace
+                                       :optimizations  :advanced
                                        :main           "startupsite.nashorn-rendering"
                                        :externs        ["externs.js"]
                                        :output-dir     "resources/public/js/prod"

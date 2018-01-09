@@ -31,8 +31,8 @@
         script               (str "<script src='js/startupsite." (when production-mode? "min.") "js' type='text/javascript'></script>")
         html                 (-> (io/resource "public/index.html")
                                slurp
-                               (str/replace #"<!-- initial html -->" app-html)
-                               (str/replace #"<!-- script -->" script)
+                               (str/replace "<!-- initial html -->" app-html)
+                               (str/replace "<!-- script -->" script)
                                (str/replace "<!-- initial state -->" initial-state-script))]
     html))
 
