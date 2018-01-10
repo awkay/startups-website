@@ -1,6 +1,6 @@
 (defproject startupsite "0.1.0-SNAPSHOT"
   :description "Startup Website"
-  :license {:name "Private" }
+  :license {:name "Private"}
   :min-lein-version "2.7.0"
 
   :dependencies [[org.clojure/clojure "1.9.0"]
@@ -9,8 +9,9 @@
                  ; ui
                  [cljsjs/semantic-ui-react "0.73.0-0"]
                  [fulcrologic/semantic-ui-react-wrappers "1.0.0"]
-                 [fulcrologic/fulcro "2.1.0-beta3"]
+                 [fulcrologic/fulcro "2.1.1-SNAPSHOT"]
                  [cljsjs/react-dom-server "15.6.2-1"]
+                 [fulcrologic/fulcro-css "2.0.0"]
 
                  ; server
                  [com.draines/postal "2.0.2"]
