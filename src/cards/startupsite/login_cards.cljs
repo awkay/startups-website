@@ -20,7 +20,7 @@
    :css-include   [LoginForm]
    :initial-state {:ROOT/login-form {}}}
   (let [{:keys [user/name user/valid?]} (get props [:session :user])]
-    (semantic-ui-frame "800px" "400px"
+    (semantic-ui-frame "600px" "400px"
       (css/style-element Root)
       (dom/div nil
         (when valid?
@@ -36,26 +36,26 @@
   {:inspect-data true})
 
 (defcard login-component-unfilled
-  (semantic-ui-frame "800px" "400px"
+  (semantic-ui-frame "600px" "400px"
     (css/style-element Root)
     (ui-login-form {})))
 
 (defcard login-component-filled
-  (semantic-ui-frame "800px" "400px"
+  (semantic-ui-frame "600px" "400px"
     (css/style-element Root)
     (ui-login-form {:login/email    "jo@example.net"
                     :login/password "letmein"})))
 
 
 (defcard login-component-error-message
-  (semantic-ui-frame "800px" "400px"
+  (semantic-ui-frame "600px" "400px"
     (css/style-element Root)
     (ui-login-form {:login/email    "jo@example.net"
                     :login/message  "Invalid credentials."
                     :login/password "letmein"})))
 
 (defcard login-component-in-progress
-  (semantic-ui-frame "800px" "400px"
+  (semantic-ui-frame "600px" "400px"
     (css/style-element Root)
     (ui-login-form {:login/email        "jo@example.net"
                     :login/in-progress? true

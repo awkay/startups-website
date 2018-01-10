@@ -70,30 +70,29 @@
 (defsc LoginForm [this {:keys [login/email login/password login/in-progress? login/message] :as props} _ {:keys [column image grid]}]
   {:query         [:login/email :login/password :login/in-progress? :login/message]
    :css           [[:.column {:max-width "450px"}]
-                   [:.grid {:height "100%"}]
-                   [:.image {:margin-top "-100px"}]]
+                   [:.grid {:height "100%"}]]
    :ident         (fn [] [:ui/forms :login-form])
    :initial-state {:login/email        "" :login/password ""
                    :login/in-progress? false :login/message ""}}
   (let [error? (and (not in-progress?) (non-empty-string? message))]
     (dom/div #js {:className (str "ui middle aligned centered grid " grid)}
       (dom/div #js {:className (str "column " column)}
-        (dom/h2 #js {:className (str "ui teal header " image)}
-          (dom/img #js {:width 200 :src "/img/fulcrologic.png", :className image})
+        (dom/h2 #js {:className (str "ui teal header")}
+          (dom/img #js {:width 200 :src "/img/fulcrologic.png"})
           (dom/div #js {:className "content"} "\n Log-in to your account\n "))
         (s/ui-form #js {:size "large" :loading in-progress?}
-          (dom/div #js {:className "ui stacked segment"}
-            (dom/div #js {:className "field"}
-              (dom/div #js {:className "ui left icon input"}
-                (dom/i #js {:className "user icon"})
+          (s/ui-segment #js {:stacked true}
+            (s/ui-form-field nil
+              (s/ui-input #js {:icon true :iconPosition "left"}
+                (s/ui-icon #js {:name i/user-icon})
                 (dom/input #js {:type        "text"
                                 :value       email
                                 :onChange    (fn [evt] (m/set-string! this :login/email :event evt))
                                 :name        "email"
                                 :placeholder "E-mail address"})))
             (s/ui-form-field nil
-              (dom/div #js {:className "ui left icon input"}
-                (dom/i #js {:className "lock icon"})
+              (s/ui-input #js {:icon true :iconPosition "left"}
+                (s/ui-icon #js {:name i/lock-icon})
                 (dom/input #js {:type     "password",
                                 :value    password
                                 :onChange (fn [evt] (m/set-string! this :login/password :event evt))
