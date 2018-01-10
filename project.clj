@@ -123,7 +123,7 @@
                                                           :optimizations        :none
                                                           :output-dir           "resources/public/js/cards"
                                                           :output-to            "resources/public/js/cards.js"
-                                                          :preloads             [devtools.preload]
+                                                          :preloads             [devtools.preload fulcro.inspect.preload]
                                                           :source-map-timestamp true}}]}
 
                           :plugins      [[lein-cljsbuild "1.1.7"]
@@ -133,7 +133,7 @@
                           :dependencies [[binaryage/devtools "0.9.8"]
                                          [hawk "0.2.11"]
                                          [org.clojure/tools.nrepl "0.2.13"]
-                                         [fulcrologic/fulcro-inspect "2.0.0-alpha2"]
+                                         [fulcrologic/fulcro-inspect "2.0.0-alpha4"]
                                          [org.clojure/tools.namespace "0.3.0-alpha4"]
                                          [lein-doo "0.1.7" :scope "test"]
                                          [figwheel-sidecar "0.5.14"]

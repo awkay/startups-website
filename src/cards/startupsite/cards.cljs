@@ -1,2 +1,3 @@
 (ns startupsite.cards
-  (:require [startupsite.intro]))
+  (:require startupsite.intro
+            startupsite.login-cards))

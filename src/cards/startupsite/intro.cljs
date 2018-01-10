@@ -1,6 +1,5 @@
 (ns startupsite.intro
-  (:require [devcards.core :as rc :refer-macros [defcard]]
-            [om.next :as om :refer-macros [defui]]
+  (:require [devcards.core :as dc :refer-macros [defcard]]
             [startupsite.ui.components :as comp]
             [om.dom :as dom]))
 
