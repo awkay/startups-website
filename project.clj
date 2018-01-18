@@ -9,7 +9,7 @@
                  ; ui
                  [cljsjs/semantic-ui-react "0.73.0-0"]
                  [fulcrologic/semantic-ui-react-wrappers "1.0.0"]
-                 [fulcrologic/fulcro "2.1.1-SNAPSHOT"]
+                 [fulcrologic/fulcro "2.1.2"]
                  [cljsjs/react-dom-server "15.6.2-1"]
                  [fulcrologic/fulcro-css "2.0.0"]
 
